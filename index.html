@@ -15,7 +15,6 @@
         .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
         .btn-uqt:active { transform: scale(0.98); }
 
-        /* --- UQTCARD (ARRIBA) --- */
         .uqt-card-container { background: var(--verde); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .uqt-card-logo { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
         .uqt-card-logo span.u { color: var(--azul); }
@@ -42,10 +41,11 @@
         .list-container { padding: 0 20px; }
         .item-card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; transition: 0.2s; }
         .item-card h3 { margin: 0; color: var(--verde); font-size: 1.1rem; }
+        
+        #admin-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 30000; padding: 25px; overflow-y: auto; }
         .receptor-card { background: #111; border: 1px solid #333; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; }
         .parada-edit { background: #222; padding: 10px; border-radius: 8px; margin-top: 5px; }
 
-        #admin-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 30000; padding: 25px; overflow-y: auto; }
         #carta-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:70000; padding:20px; overflow-y:auto; flex-direction:column; align-items:center; }
         .hoja-uqt { background-image: url('https://i.postimg.cc/DfSB1gr8/1778130391359-(1).jpg'); background-size: 100% 100%; width: 100%; max-width: 450px; min-height: 600px; padding: 100px 40px 60px 40px; color: #000; box-sizing: border-box; font-family: serif; position: relative; }
     </style>
@@ -62,12 +62,18 @@
     <div id="checkout-modal">
         <div class="checkout-box">
             <h3 style="margin-top:0;">💳 Checkout BancoGato</h3>
-            <p style="font-size:0.85rem;">Completa esto para tu compra</p>
-            <input type="text" id="pay-nombre" placeholder="Nombre completo">
+            <p style="font-size:0.85rem;">Genial, completa esto antes de tu compra</p>
+            <label style="font-size:0.7rem;">Nombre y apellido:</label>
+            <input type="text" id="pay-nombre" placeholder="Ej: Juan Pérez">
+            <label style="font-size:0.7rem;">Tarjeta (solo BancoGato):</label>
             <div class="bg-card-input">
-                <input type="text" maxlength="4" placeholder="XXXX"> <input type="text" maxlength="4" placeholder="XXXX">
-                <input type="text" maxlength="4" placeholder="XXXX"> <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
             </div>
+            <label style="font-size:0.7rem;">CVV:</label>
+            <input type="text" maxlength="3" placeholder="XXX" style="width:60px;">
             <h2 style="text-align:center;">TOTAL: <span id="pay-total">R$ 0</span></h2>
             <button class="btn-uqt" style="background:var(--azul); color:#fff;" onclick="finalizarCompra()">REALIZAR COMPRA</button>
             <button class="btn-uqt" style="background:#ccc; margin-top:10px;" onclick="cerrarCheckout()">CANCELAR</button>
@@ -76,32 +82,39 @@
 
     <div id="carta-modal">
         <button class="btn-uqt" style="width:auto; margin-bottom:10px; background:var(--rojo); color:#fff;" onclick="document.getElementById('carta-modal').style.display='none'">CERRAR CORREO</button>
-        <div class="hoja-uqt"><div id="carta-contenido" style="white-space: pre-wrap;"></div></div>
+        <div class="hoja-uqt">
+            <div id="carta-contenido" style="white-space: pre-wrap; line-height: 1.4; font-size: 0.95rem;"></div>
+        </div>
     </div>
 
     <div id="auth-screen">
-        <img src="https://i.postimg.cc/sgPtr7Cm/1773207513022-2.jpg" height="100" style="border-radius:50%; border:3px solid var(--verde);">
+        <img src="https://i.postimg.cc/sgPtr7Cm/1773207513022-2.jpg" height="100" style="border-radius: 50%; border: 3px solid var(--verde); margin-bottom: 15px;">
         <div class="login-alert-box" id="txt-login-alert">Cargando...</div>
-        <input type="email" id="log-email" placeholder="Usuario institucional">
-        <input type="password" id="log-pass" placeholder="Contraseña">
-        <button class="btn-uqt" onclick="ingresar()">🔐 Acceder al Sistema</button>
-        <button class="btn-uqt" style="background: #111; color: #fff; margin-top: 10px;" onclick="accesoAdmin()">🛠️ Admin Panel</button>
+        <div id="login-form" style="width: 100%; max-width: 320px;">
+            <input type="email" id="log-email" placeholder="Usuario institucional">
+            <input type="password" id="log-pass" placeholder="Contraseña">
+            <button class="btn-uqt" onclick="ingresar()">🔐 Acceder al Sistema</button>
+            <button class="btn-uqt" style="background: #111; color: #fff; margin-top: 10px;" onclick="accesoAdmin()">🛠️ Admin Panel</button>
+        </div>
     </div>
 
     <div id="app-6" style="display:none;">
         <div class="header-top">
             <span>UQT S.A. ● FERROVIARIA</span>
             <span id="reloj">--:--</span>
-            <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px;">SALIR</button>
+            <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.7rem; font-weight:bold;">SALIR</button>
         </div>
 
         <div class="uqt-card-container">
             <div class="uqt-card-logo"><span class="u">UQT</span><span class="c">Card</span></div>
             <p>ID: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
+            <p style="font-size:0.75rem; margin:0;">Puedes cargar esta tarjeta desde <b>BancoGato</b> o mediante codes de regalo.</p>
         </div>
 
         <div class="sec-divider">📬 Buzon UQT</div>
-        <div style="padding: 0 20px;"><div id="lista-correos"></div></div>
+        <div style="padding: 0 20px;">
+            <div id="lista-correos"></div>
+        </div>
 
         <div class="sec-divider">🚉 Estaciones de Tren</div>
         <div id="lista-trenes" class="list-container"></div>
@@ -111,11 +124,11 @@
 
         <div id="compra-interactiva" style="display:none; padding: 20px; background: #000; border: 2px solid var(--oro); margin: 20px; border-radius: 15px;">
             <h3 style="color:var(--oro); margin-top:0;">🎫 Compra de Boleto</h3>
-            <p id="compra-info"></p>
+            <p id="compra-info" style="font-size:0.9rem;"></p>
             <label>Desde:</label>
             <select id="compra-desde"></select>
             <label>Hasta:</label>
-            <input type="text" id="compra-hasta" readonly>
+            <input type="text" id="compra-hasta" readonly style="background:#222; color:#fff">
             <p>Precio Tramo: <b id="compra-precio">R$ 0.00</b></p>
             <button class="btn-uqt" onclick="confirmarCompra()">CONFIRMAR BOLETO</button>
             <button class="btn-uqt" style="background:#444; color:white; margin-top:5px;" onclick="this.parentElement.style.display='none'">CANCELAR</button>
@@ -123,46 +136,84 @@
 
         <div class="sec-divider">🎧 Soporte Técnico</div>
         <div style="padding: 20px;">
-            <textarea id="soporte-msg" placeholder="Describe tu problema aquí..."></textarea>
-            <button class="btn-uqt" onclick="enviarSoporte()">Enviar Reporte</button>
+            <div class="item-card" style="cursor:default">
+                <textarea id="soporte-msg" placeholder="Describe tu problema aquí..."></textarea>
+                <button class="btn-uqt" onclick="enviarSoporte()">Enviar Reporte</button>
+            </div>
         </div>
 
         <div class="sec-divider">💎 Planes para ti</div>
         <div class="planes-container">
-            <div class="plan-card"><h3>Miga</h3><div class="plan-beneficios" id="ben-miga"></div><button class="btn-uqt" onclick="prepararCompra('Miga', 'miga')">Comprar: R$ <span id="pr-miga">0</span></button></div>
-            <div class="plan-card"><h3>Pan</h3><div class="plan-beneficios" id="ben-pan"></div><button class="btn-uqt" onclick="prepararCompra('Pan', 'pan')">Comprar: R$ <span id="pr-pan">0</span></button></div>
-            <div class="plan-card"><h3>Pan Premium</h3><div class="plan-beneficios" id="ben-premium"></div><button class="btn-uqt" onclick="prepararCompra('Pan Premium', 'premium')">Comprar: R$ <span id="pr-premium">0</span></button></div>
+            <div class="plan-card">
+                <h3>Miga</h3>
+                <div class="plan-beneficios" id="ben-miga">Cargando...</div>
+                <button class="btn-uqt" onclick="prepararCompra('Miga', 'miga')">Comprar: R$ <span id="pr-miga">0</span></button>
+            </div>
+            <div class="plan-card">
+                <h3>Pan</h3>
+                <div class="plan-beneficios" id="ben-pan">Cargando...</div>
+                <button class="btn-uqt" onclick="prepararCompra('Pan', 'pan')">Comprar: R$ <span id="pr-pan">30.000</span></button>
+            </div>
+            <div class="plan-card">
+                <h3>Pan Premium</h3>
+                <div class="plan-beneficios" id="ben-premium">Cargando...</div>
+                <button class="btn-uqt" onclick="prepararCompra('Pan Premium', 'premium')">Comprar: R$ <span id="pr-premium">80.000</span></button>
+            </div>
         </div>
     </div>
 
     <div id="admin-overlay">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2 style="color:var(--verde)">⚙️ RECEPTOR UNIVERSAL</h2>
-            <button onclick="location.reload()" style="background:var(--rojo); color:white; border:none; padding:8px 15px; border-radius:5px;">SALIR</button>
+            <button onclick="location.reload()" style="background:var(--rojo); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">SALIR</button>
         </div>
 
-        <div class="sec-divider">📅 PUBLICAR HORARIO</div>
+        <div class="sec-divider">📅 PUBLICAR HORARIO NUEVO</div>
         <div style="background:var(--panel); padding:15px; border-radius:10px;">
             <select id="adm-h-tipo"><option value="Tren">Tren</option><option value="Bus">Bus</option></select>
-            <input type="text" id="adm-h-ramal" placeholder="Nombre del Ramal (Ej: Línea A)">
-            <input type="number" id="adm-h-precio" placeholder="Precio Base">
+            <input type="text" id="adm-h-ramal" placeholder="Nombre del Ramal">
+            <input type="number" id="adm-h-precio" placeholder="Precio por parada">
             <div id="adm-h-intermedia">
-                <div class="parada-edit"><b>Origen:</b> <input type="text" class="p-nombre" placeholder="Estación"> <input type="time" class="p-hora"></div>
+                <div class="parada-edit">
+                    <b>Inicio:</b> <input type="text" class="p-nombre" placeholder="Estación/Parada"> <input type="time" class="p-hora">
+                </div>
             </div>
-            <button class="btn-uqt" style="background:#333; color:white; margin-top:5px;" onclick="addIntermedia()">+ AGREGAR PARADA</button>
-            <div class="parada-edit"><b>Destino:</b> <input type="text" id="adm-h-fin-nombre" placeholder="Estación"> <input type="time" id="adm-h-fin-hora"></div>
-            <button class="btn-uqt" style="margin-top:10px;" onclick="subirHorario()">PUBLICAR A LA RED</button>
+            <button class="btn-uqt" style="background:#333; color:white; margin-top:5px;" onclick="addIntermedia()">+ AGREGAR INTERMEDIA</button>
+            <div class="parada-edit">
+                <b>Fin:</b> <input type="text" id="adm-h-fin-nombre" placeholder="Estación/Parada"> <input type="time" id="adm-h-fin-hora">
+            </div>
+            <button class="btn-uqt" style="margin-top:10px;" onclick="subirHorario()">PUBLICAR HORARIO</button>
         </div>
 
         <div class="sec-divider">🗑️ GESTIÓN DE HORARIOS</div>
-        <div id="adm-lista-borrar"></div>
+        <div id="adm-lista-borrar" style="max-height:150px; overflow-y:auto;"></div>
 
-        <div class="sec-divider">📧 UQT MAIL</div>
-        <div style="background:var(--panel); padding:15px; border-radius:10px;">
-            <select id="adm-c-usuario-select"><option value="">Cargando...</option></select>
-            <input type="text" id="adm-c-asunto" placeholder="Asunto"><textarea id="adm-c-texto" placeholder="Mensaje"></textarea>
-            <button class="btn-uqt" onclick="enviarCorreoInterno()">ENVIAR CORREO</button>
+        <div class="sec-divider">💎 CONFIGURAR PLANES</div>
+        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
+            <b>Miga:</b>
+            <textarea id="adm-miga-ben"></textarea><input type="text" id="adm-miga-pr">
+            <hr>
+            <b>Pan:</b>
+            <textarea id="adm-pan-ben"></textarea><input type="text" id="adm-pan-pr">
+            <hr>
+            <b>Pan Premium:</b>
+            <textarea id="adm-premium-ben"></textarea><input type="text" id="adm-premium-pr">
+            <button class="btn-uqt" onclick="actualizarPlanes()">Actualizar Planes</button>
         </div>
+
+        <div class="sec-divider">📧 ENVIAR CORREO UQT</div>
+        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
+            <select id="adm-c-usuario-select"><option value="">Cargando...</option></select>
+            <input type="text" id="adm-c-asunto" placeholder="Asunto">
+            <textarea id="adm-c-texto" placeholder="Mensaje"></textarea>
+            <button class="btn-uqt" onclick="enviarCorreoInterno()">PUBLICAR CORREO</button>
+        </div>
+
+        <div class="sec-divider">📢 CONFIGURACIÓN VISUAL</div>
+        <input type="text" id="adm-marquee" placeholder="Marquee">
+        <input type="text" id="adm-login-txt" placeholder="Login Alert">
+        <input type="text" id="adm-img-url" placeholder="URL Imagen">
+        <button class="btn-uqt" onclick="actualizarConfig()">Guardar Config</button>
     </div>
 
     <script>
@@ -172,14 +223,37 @@
 
         let globalServicios = [];
         let servicioSeleccionado = null;
-        let planSeleccionado = ""; let precioSeleccionado = "";
+        let planSeleccionado = null;
+        let precioSeleccionado = "";
 
         function inicializarApp() {
-            // Cargar Configuración Visual y Planes
-            db.collection('config').doc('visuales').onSnapshot(d => { if(d.exists){ document.getElementById('txt-marquee').innerText = d.data().marquee; document.getElementById('txt-login-alert').innerText = d.data().loginTxt; } });
-            db.collection('config').doc('planes').onSnapshot(d => { if(d.exists){ const p = d.data(); document.getElementById('ben-miga').innerText = p.miga.ben; document.getElementById('pr-miga').innerText = p.miga.pr; document.getElementById('ben-pan').innerText = p.pan.ben; document.getElementById('pr-pan').innerText = p.pan.pr; document.getElementById('ben-premium').innerText = p.premium.ben; document.getElementById('pr-premium').innerText = p.premium.pr; } });
+            // Visuales
+            db.collection('config').doc('visuales').onSnapshot(d => {
+                if(d.exists){
+                    const data = d.data();
+                    document.getElementById('txt-marquee').innerText = data.marquee || "";
+                    document.getElementById('txt-login-alert').innerText = data.loginTxt || "";
+                    if(data.imgAnuncio && data.imgAnuncio !== "QuitarImagen") {
+                        document.getElementById('img-anuncio-src').src = data.imgAnuncio;
+                        document.getElementById('anuncio-img-overlay').style.display = 'flex';
+                    }
+                }
+            });
 
-            // Cargar Horarios
+            // Planes
+            db.collection('config').doc('planes').onSnapshot(d => {
+                if(d.exists){
+                    const p = d.data();
+                    document.getElementById('ben-miga').innerText = p.miga.ben;
+                    document.getElementById('pr-miga').innerText = p.miga.pr;
+                    document.getElementById('ben-pan').innerText = p.pan.ben;
+                    document.getElementById('pr-pan').innerText = p.pan.pr;
+                    document.getElementById('ben-premium').innerText = p.premium.ben;
+                    document.getElementById('pr-premium').innerText = p.premium.pr;
+                }
+            });
+
+            // Horarios Itinerarios
             db.collection('itinerarios').doc('servicios').onSnapshot(d => {
                 if(d.exists) {
                     globalServicios = d.data().servicios || [];
@@ -193,14 +267,21 @@
                     document.getElementById('display-uqt-id').innerText = user.email.split('@')[0].toUpperCase();
                     db.collection('buzon').where("para", "==", user.email).orderBy("timestamp", "desc").onSnapshot(snap => {
                         const lista = document.getElementById('lista-correos');
-                        lista.innerHTML = snap.docs.map(doc => `<div class="item-card" onclick="abrirCarta('${doc.data().remitente}', '${doc.data().asunto}', '${doc.data().mensaje}')"><p>${doc.data().remitente}</p><h3>${doc.data().asunto}</h3></div>`).join('');
+                        lista.innerHTML = snap.docs.map(doc => {
+                            const c = doc.data();
+                            return `<div class="item-card" onclick="abrirCarta('${c.remitente}', '${c.asunto}', '${c.mensaje}')">
+                                <p style="color:var(--oro); margin:0; font-size:0.8rem;">De: ${c.remitente}</p>
+                                <h3 style="font-size:1rem;">${c.asunto}</h3>
+                                <button class="btn-uqt" style="padding:5px; font-size:0.7rem; margin-top:5px; width:100px;">ABRIR</button>
+                            </div>`;
+                        }).join('');
                     });
                     cargarUsuariosAdmin();
                 }
             });
         }
 
-        // FUNCIONES DE HORARIOS
+        // --- SISTEMA DE HORARIOS (LÓGICA) ---
         function renderizarServicios(servicios) {
             const t = document.getElementById('lista-trenes'); const b = document.getElementById('lista-buses');
             t.innerHTML = ""; b.innerHTML = "";
@@ -208,31 +289,74 @@
                 s.paradas.forEach(p => {
                     const html = `<div class="item-card" onclick="iniciarCompra('${s.ramal}', '${p.nombre}')">
                         <p style="color:var(--oro); font-weight:bold; margin:0;">${s.ramal}</p>
-                        <h3>${p.nombre}</h3><p>Llega: <b>${p.hora}</b></p></div>`;
+                        <h3>${p.nombre}</h3><p>Hora: ${p.hora}</p></div>`;
                     if(s.medio === "Tren") t.innerHTML += html; else b.innerHTML += html;
                 });
             });
         }
 
+        function iniciarCompra(sId, pNombre) {
+            const s = globalServicios.find(x => x.ramal === sId);
+            if(!s) return;
+            servicioSeleccionado = s;
+            document.getElementById('compra-interactiva').style.display = 'block';
+            document.getElementById('compra-info').innerText = `${s.ramal} destino ${pNombre}`;
+            document.getElementById('compra-hasta').value = pNombre;
+            document.getElementById('compra-precio').innerText = `R$ ${s.precioTramo || 0}`;
+            const idx = s.paradas.findIndex(p => p.nombre === pNombre);
+            const anteriores = s.paradas.slice(0, idx);
+            document.getElementById('compra-desde').innerHTML = anteriores.map(p => `<option>${p.nombre}</option>`).join('');
+            if(anteriores.length === 0) alert("Cabecera de ramal.");
+        }
+
+        async function confirmarCompra() {
+            const ticket = "UQT-" + Math.random().toString(36).substr(2,6).toUpperCase();
+            await db.collection('boletos_emitidos').add({
+                boletoID: ticket,
+                usuarioEmail: auth.currentUser.email,
+                desde: document.getElementById('compra-desde').value,
+                hasta: document.getElementById('compra-hasta').value,
+                servicio: servicioSeleccionado.ramal,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Boleto emitido: " + ticket);
+            document.getElementById('compra-interactiva').style.display = 'none';
+        }
+
+        // --- ADMIN HORARIOS ---
         function addIntermedia() {
             const div = document.createElement('div'); div.className = "parada-edit";
-            div.innerHTML = `<input type="text" class="p-nombre" placeholder="Parada"> <input type="time" class="p-hora">`;
+            div.innerHTML = `<input type="text" class="p-nombre" placeholder="Intermedia"> <input type="time" class="p-hora">`;
             document.getElementById('adm-h-intermedia').appendChild(div);
         }
 
         async function subirHorario() {
             const paradas = [];
-            document.querySelectorAll('.p-nombre').forEach((el, i) => { paradas.push({ nombre: el.value, hora: document.querySelectorAll('.p-hora')[i].value }); });
+            document.querySelectorAll('.p-nombre').forEach((el, i) => {
+                const hora = document.querySelectorAll('.p-hora')[i].value;
+                if(el.value) paradas.push({ nombre: el.value, hora });
+            });
             paradas.push({ nombre: document.getElementById('adm-h-fin-nombre').value, hora: document.getElementById('adm-h-fin-hora').value });
-            const nuevo = { ramal: document.getElementById('adm-h-ramal').value, medio: document.getElementById('adm-h-tipo').value, precioTramo: document.getElementById('adm-h-precio').value, paradas };
+
+            const nuevo = {
+                ramal: document.getElementById('adm-h-ramal').value,
+                medio: document.getElementById('adm-h-tipo').value,
+                precioTramo: parseFloat(document.getElementById('adm-h-precio').value),
+                paradas
+            };
             let lista = globalServicios.filter(x => x.ramal !== nuevo.ramal);
             lista.push(nuevo);
             await db.collection('itinerarios').doc('servicios').set({ servicios: lista });
-            alert("Publicado!");
+            alert("Itinerario Publicado.");
         }
 
         function renderizarListaBorrar(servicios) {
-            document.getElementById('adm-lista-borrar').innerHTML = servicios.map(s => `<div class="receptor-card"><span>${s.ramal}</span> <button onclick="borrarServicio('${s.ramal}')">ELIMINAR</button></div>`).join('');
+            document.getElementById('adm-lista-borrar').innerHTML = servicios.map(s => `
+                <div class="receptor-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>${s.ramal} (${s.medio})</span>
+                    <button onclick="borrarServicio('${s.ramal}')" style="background:red; border:none; color:white; padding:5px; border-radius:4px;">BORRAR</button>
+                </div>
+            `).join('');
         }
 
         async function borrarServicio(id) {
@@ -240,34 +364,77 @@
             await db.collection('itinerarios').doc('servicios').set({ servicios: lista });
         }
 
-        function iniciarCompra(sId, pNombre) {
-            const s = globalServicios.find(x => x.ramal === sId);
-            servicioSeleccionado = s;
-            document.getElementById('compra-interactiva').style.display = 'block';
-            document.getElementById('compra-info').innerText = `${s.ramal} con destino a ${pNombre}`;
-            document.getElementById('compra-hasta').value = pNombre;
-            document.getElementById('compra-precio').innerText = `R$ ${s.precioTramo}`;
-            const idx = s.paradas.findIndex(p => p.nombre === pNombre);
-            document.getElementById('compra-desde').innerHTML = s.paradas.slice(0, idx).map(p => `<option>${p.nombre}</option>`).join('');
+        // --- LÓGICA DE PLANES Y CORREOS ---
+        function prepararCompra(nombre, id) {
+            planSeleccionado = nombre;
+            precioSeleccionado = document.getElementById('pr-' + id).innerText;
+            document.getElementById('pay-total').innerText = "R$ " + precioSeleccionado;
+            document.getElementById('checkout-modal').style.display = 'flex';
         }
 
-        async function confirmarCompra() {
-            const t = "UQT-" + Math.random().toString(36).substr(2,6).toUpperCase();
-            await db.collection('boletos_emitidos').add({ boletoID: t, usuario: auth.currentUser.email, desde: document.getElementById('compra-desde').value, hasta: document.getElementById('compra-hasta').value, servicio: servicioSeleccionado.ramal, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Boleto Emitido: " + t); document.getElementById('compra-interactiva').style.display = 'none';
-        }
-
-        // LÓGICA GENERAL
-        function prepararCompra(n, id) { planSeleccionado = n; precioSeleccionado = document.getElementById('pr-'+id).innerText; document.getElementById('pay-total').innerText = "R$ " + precioSeleccionado; document.getElementById('checkout-modal').style.display = 'flex'; }
         function cerrarCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
-        async function finalizarCompra() { await db.collection('usuarios').doc(auth.currentUser.email).update({ plan: planSeleccionado }); alert("Suscrito!"); cerrarCheckout(); }
-        function ingresar() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).then(() => { document.getElementById('auth-screen').style.display='none'; document.getElementById('app-6').style.display='block'; }); }
+
+        async function finalizarCompra() {
+            const nombre = document.getElementById('pay-nombre').value;
+            if(!nombre) return alert("Completa tu nombre.");
+            try {
+                await db.collection('usuarios').doc(auth.currentUser.email).update({ plan: planSeleccionado, nombreCompleto: nombre });
+                alert(`¡Éxito! Ahora tienes el plan [${planSeleccionado}].`);
+                cerrarCheckout();
+            } catch(e) { alert("Error en el pago."); }
+        }
+
+        async function actualizarPlanes() {
+            await db.collection('config').doc('planes').set({
+                miga: { ben: document.getElementById('adm-miga-ben').value, pr: document.getElementById('adm-miga-pr').value },
+                pan: { ben: document.getElementById('adm-pan-ben').value, pr: document.getElementById('adm-pan-pr').value },
+                premium: { ben: document.getElementById('adm-premium-ben').value, pr: document.getElementById('adm-premium-pr').value }
+            });
+            alert("Planes actualizados.");
+        }
+
+        function cargarUsuariosAdmin() {
+            db.collection('usuarios').onSnapshot(snap => {
+                const select = document.getElementById('adm-c-usuario-select');
+                select.innerHTML = '<option value="">-- Seleccionar --</option>';
+                snap.forEach(doc => { select.innerHTML += `<option value="${doc.id}">${doc.id}</option>`; });
+            });
+        }
+
+        async function enviarCorreoInterno() {
+            const para = document.getElementById('adm-c-usuario-select').value;
+            const asunto = document.getElementById('adm-c-asunto').value;
+            const mensaje = document.getElementById('adm-c-texto').value;
+            if(!para || !asunto || !mensaje) return alert("Faltan datos");
+            await db.collection('buzon').add({ para, asunto, mensaje, remitente: "Admin@UQT.com", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+            alert("Correo enviado.");
+        }
+
+        function abrirCarta(de, asunto, msg) {
+            document.getElementById('carta-modal').style.display = 'flex';
+            document.getElementById('carta-contenido').innerHTML = `<b>DE:</b> ${de}<br><b>ASUNTO:</b> ${asunto}<hr>${msg.replace(/\n/g, '<br>')}`;
+        }
+
+        function ingresar() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            auth.signInWithEmailAndPassword(email, pass).then(async () => {
+                await db.collection('usuarios').doc(email).set({ email, lastLogin: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                document.getElementById('auth-screen').style.display='none'; 
+                document.getElementById('app-6').style.display='block'; 
+            }).catch(() => alert("Acceso denegado"));
+        }
+
         function cerrarSesion() { auth.signOut().then(() => location.reload()); }
-        function accesoAdmin() { if(prompt("Pass:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
-        function abrirCarta(de, asu, msg) { document.getElementById('carta-modal').style.display = 'flex'; document.getElementById('carta-contenido').innerText = `De: ${de}\nAsunto: ${asu}\n\n${msg}`; }
-        async function enviarSoporte() { await db.collection('soporte').add({ usuario: auth.currentUser.email, mensaje: document.getElementById('soporte-msg').value, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); alert("Reporte enviado."); }
-        function cargarUsuariosAdmin() { db.collection('usuarios').get().then(snap => { document.getElementById('adm-c-usuario-select').innerHTML = snap.docs.map(doc => `<option value="${doc.id}">${doc.id}</option>`).join(''); }); }
-        async function enviarCorreoInterno() { await db.collection('buzon').add({ para: document.getElementById('adm-c-usuario-select').value, asunto: document.getElementById('adm-c-asunto').value, mensaje: document.getElementById('adm-c-texto').value, remitente: "Admin@UQT", timestamp: firebase.firestore.FieldValue.serverTimestamp() }); alert("Enviado."); }
+        function accesoAdmin() { if(prompt("Acceso:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
+        async function actualizarConfig() {
+            await db.collection('config').doc('visuales').set({ marquee: document.getElementById('adm-marquee').value, loginTxt: document.getElementById('adm-login-txt').value, imgAnuncio: document.getElementById('adm-img-url').value }, { merge: true });
+            alert("Config guardada");
+        }
+        async function enviarSoporte() {
+            await db.collection('soporte').add({ usuario: auth.currentUser.email, mensaje: document.getElementById('soporte-msg').value, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+            alert("Enviado");
+        }
         setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
