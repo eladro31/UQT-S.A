@@ -3,28 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UQT S.A. | v6.8.0</title>
+    <title>UQT S.A. | v6.8.5 Corporativo</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root { --azul: #16538d; --verde: #32CD32; --fondo: #0a0a0a; --panel: #1a1a1a; --oro: #FFD700; --texto: #ffffff; --rojo: #ff4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--fondo); color: var(--texto); overflow-x: hidden; }
+        
         input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; background: #111; color: var(--verde); border: 1px solid #333; box-sizing: border-box; outline: none; }
         .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
         .btn-uqt:active { transform: scale(0.98); }
-        
-        /* ESTILOS UQTCARD */
-        .uqt-card { background: linear-gradient(135deg, #000 0%, #1a1a1a 100%); border: 2px solid var(--oro); border-radius: 20px; padding: 25px; margin: 20px; box-shadow: 0 0 15px rgba(255,215,0,0.2); }
-        .card-plan-box { background: #222; border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #333; }
-        .plan-item { border-bottom: 1px solid #333; padding: 10px 0; }
-        .plan-item:last-child { border: none; }
-        .price-tag { color: var(--oro); font-weight: bold; float: right; }
-        
-        /* BANCOGATO FORM */
-        #bancogato-checkout { display:none; background: #f0f0f0; color: #000; padding: 20px; border-radius: 15px; margin-top: 15px; }
-        .bg-input-group { display: flex; gap: 10px; }
 
+        /* --- NUEVOS ESTILOS UQTCARD --- */
+        .uqt-card-container { background: var(--verde); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .uqt-card-logo { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
+        .uqt-card-logo span.u { color: var(--azul); }
+        .uqt-card-logo span.c { color: var(--rojo); }
+        .uqt-card-id { font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; }
+        
+        .planes-container { padding: 0 20px; }
+        .plan-card { background: var(--panel); border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 15px; transition: 0.3s; }
+        .plan-card h3 { margin-top: 0; color: var(--oro); }
+        .plan-beneficios { font-size: 0.85rem; line-height: 1.4; color: #ccc; margin-bottom: 10px; }
+
+        #checkout-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:80000; padding:20px; flex-direction:column; align-items:center; justify-content:center; }
+        .checkout-box { background: #fff; color: #000; padding: 20px; border-radius: 12px; width: 100%; max-width: 350px; }
+        .bg-card-input { display: flex; gap: 5px; }
+        .bg-card-input input { background: #eee; color: #000; border: 1px solid #ccc; text-align: center; padding: 10px 5px; }
+
+        /* Estilos base previos */
         #marquee-top { background: #000; color: var(--oro); border-bottom: 1px solid var(--oro); padding: 5px 0; font-family: monospace; font-weight: bold; }
         #auth-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .login-alert-box { background: rgba(255, 215, 0, 0.1); border: 2px solid var(--oro); padding: 15px; border-radius: 8px; color: var(--oro); font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 320px; text-align: center; font-size: 0.9rem; }
@@ -37,7 +45,6 @@
         .item-card h3 { margin: 0; color: var(--verde); font-size: 1.1rem; }
         #admin-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 30000; padding: 25px; overflow-y: auto; }
         .receptor-card { background: #111; border: 1px solid #333; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; }
-        .parada-edit { background: #222; padding: 10px; border-radius: 8px; margin-top: 5px; }
         #carta-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:70000; padding:20px; overflow-y:auto; flex-direction:column; align-items:center; }
         .hoja-uqt { background-image: url('https://i.postimg.cc/DfSB1gr8/1778130391359-(1).jpg'); background-size: 100% 100%; width: 100%; max-width: 450px; min-height: 600px; padding: 100px 40px 60px 40px; color: #000; box-sizing: border-box; font-family: serif; position: relative; }
     </style>
@@ -49,6 +56,30 @@
     <div id="anuncio-img-overlay">
         <span class="close-anuncio" onclick="this.parentElement.style.display='none'">X</span>
         <img id="img-anuncio-src" src="" style="max-width: 90%; max-height: 80%; border: 3px solid var(--oro); border-radius: 15px;">
+    </div>
+
+    <div id="checkout-modal">
+        <div class="checkout-box">
+            <h3 style="margin-top:0;">💳 Checkout BancoGato</h3>
+            <p style="font-size:0.85rem;">Genial, completa esto antes de tu compra</p>
+            <label style="font-size:0.7rem;">Nombre y apellido:</label>
+            <input type="text" id="pay-nombre" placeholder="Ej: Juan Pérez">
+            
+            <label style="font-size:0.7rem;">Tarjeta (solo BancoGato):</label>
+            <div class="bg-card-input">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+                <input type="text" maxlength="4" placeholder="XXXX">
+            </div>
+            <label style="font-size:0.7rem;">CVV:</label>
+            <input type="text" maxlength="3" placeholder="XXX" style="width:60px;">
+            
+            <h2 style="text-align:center;">TOTAL: <span id="pay-total">R$ 0</span></h2>
+            
+            <button class="btn-uqt" style="background:var(--azul); color:#fff;" onclick="finalizarCompra()">REALIZAR COMPRA</button>
+            <button class="btn-uqt" style="background:#ccc; margin-top:10px;" onclick="cerrarCheckout()">CANCELAR</button>
+        </div>
     </div>
 
     <div id="carta-modal">
@@ -76,45 +107,41 @@
             <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.7rem; font-weight:bold;">SALIR</button>
         </div>
 
-        <div class="uqt-card">
-            <h2 style="color:var(--oro); margin:0;">UQTCard <small style="font-size:0.6rem; vertical-align:middle;">(LOGO)</small></h2>
-            <p id="card-user-id" style="font-family:monospace; color:#888; margin:5px 0;">ID: Cargando...</p>
-            <p style="font-size:0.75rem; color:#aaa;">Puedes cargar esta tarjeta desde <b>BancoGato</b> o mediante codes de regalo.</p>
-            
-            <div class="sec-divider" style="margin:15px 0 5px 0;">💎 Comprar Plan</div>
-            <div class="card-plan-box">
-                <p style="font-size:0.8rem; color:var(--oro); margin-bottom:10px;">| Planes para ti</p>
-                
-                <div class="plan-item">
-                    <b>Miga</b> <span class="price-tag">R$ <span id="p-miga-val">0</span></span>
-                    <p id="t-miga-ben" style="font-size:0.7rem; color:#ccc; margin:5px 0;">Descuentos del 10% en compras y boletos<br>5% más de saldo en Codes<br>15% más de saldo en BancoGato</p>
-                    <button class="btn-uqt" style="padding:5px; font-size:0.7rem;" onclick="abrirPago('Miga', 0)">COMPRAR</button>
-                </div>
+        <div class="uqt-card-container">
+            <div class="uqt-card-logo"><span class="u">UQT</span><span class="c">Card</span></div>
+            <p>ID: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
+            <p style="font-size:0.75rem; margin:0;">Puedes cargar esta tarjeta desde <b>BancoGato</b> o mediante codes de regalo.</p>
+        </div>
 
-                <div class="plan-item">
-                    <b>Pan</b> <span class="price-tag">R$ <span id="p-pan-val">30.000</span></span>
-                    <p id="t-pan-ben" style="font-size:0.7rem; color:#ccc; margin:5px 0;">Descuentos del 50% en boletos<br>25% más de saldo en Codes<br>30% más de saldo en BancoGato</p>
-                    <button class="btn-uqt" style="padding:5px; font-size:0.7rem;" onclick="abrirPago('Pan', 30000)">COMPRAR</button>
+        <div class="sec-divider">💎 Planes para ti</div>
+        <div class="planes-container">
+            <div class="plan-card">
+                <h3>Miga</h3>
+                <div class="plan-beneficios" id="ben-miga">
+                    Descuentos del 10% en compras y boletos<br>
+                    5% más de saldo en Codes<br>
+                    15% más de saldo en BancoGato
                 </div>
-
-                <div class="plan-item">
-                    <b>Pan Premium</b> <span class="price-tag">R$ <span id="p-premium-val">80.000</span></span>
-                    <p id="t-premium-ben" style="font-size:0.7rem; color:#ccc; margin:5px 0;">Descuentos de hasta 90% en boletos<br>50% más de saldo en Codes y BancoGato<br>Acceso anticipado y Regalo diario (100 a 10.000)</p>
-                    <button class="btn-uqt" style="padding:5px; font-size:0.7rem;" onclick="abrirPago('Pan Premium', 80000)">COMPRAR</button>
-                </div>
+                <button class="btn-uqt" onclick="prepararCompra('Miga', 'miga')">Comprar: R$ <span id="pr-miga">0</span></button>
             </div>
-
-            <div id="bancogato-checkout">
-                <p style="font-weight:bold; margin-top:0;">Genial, completa esto antes de tu compra</p>
-                <input type="text" id="bg-nombre" placeholder="Nombre y apellido" style="background:#fff; color:#000;">
-                <label style="font-size:0.7rem;">Tarjeta (solo BancoGato)</label>
-                <div class="bg-input-group">
-                    <input type="text" placeholder="XXXX XXXX XXXX XXXX" maxlength="16" style="background:#fff; color:#000;">
-                    <input type="text" placeholder="CVV" maxlength="3" style="width:80px; background:#fff; color:#000;">
+            <div class="plan-card">
+                <h3>Pan</h3>
+                <div class="plan-beneficios" id="ben-pan">
+                    Descuentos del 50% en boletos<br>
+                    25% más de saldo en Codes<br>
+                    30% más de saldo en BancoGato
                 </div>
-                <p style="font-weight:bold;">TOTAL: <span id="bg-total" style="color:var(--azul);">R$ 0.00</span></p>
-                <button class="btn-uqt" style="background:var(--azul); color:white;" onclick="procesarCompraPlan()">REALIZAR COMPRA</button>
-                <button onclick="document.getElementById('bancogato-checkout').style.display='none'" style="background:none; border:none; color:red; font-size:0.7rem; cursor:pointer; width:100%; margin-top:10px;">CANCELAR</button>
+                <button class="btn-uqt" onclick="prepararCompra('Pan', 'pan')">Comprar: R$ <span id="pr-pan">30.000</span></button>
+            </div>
+            <div class="plan-card">
+                <h3>Pan Premium</h3>
+                <div class="plan-beneficios" id="ben-premium">
+                    Descuentos de hasta 90% en boletos<br>
+                    50% más de saldo en Codes / BancoGato<br>
+                    Acceso anticipado a funciones nuevas<br>
+                    Regalo diario de Codes (100 a 10.000)
+                </div>
+                <button class="btn-uqt" onclick="prepararCompra('Pan Premium', 'premium')">Comprar: R$ <span id="pr-premium">80.000</span></button>
             </div>
         </div>
 
@@ -156,21 +183,20 @@
             <button onclick="location.reload()" style="background:var(--rojo); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">SALIR</button>
         </div>
 
-        <div class="sec-divider">💎 GESTIÓN DE PLANES (ADMIN)</div>
+        <div class="sec-divider">💎 Configurar Planes</div>
         <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
-            <p style="color:var(--oro); margin:0;">| Miga</p>
-            <textarea id="adm-miga-txt" placeholder="Beneficios Miga"></textarea>
-            <input type="number" id="adm-miga-precio" placeholder="Precio Miga">
-            
-            <p style="color:var(--oro); margin:20px 0 0 0;">| Pan</p>
-            <textarea id="adm-pan-txt" placeholder="Beneficios Pan"></textarea>
-            <input type="number" id="adm-pan-precio" placeholder="Precio Pan">
-            
-            <p style="color:var(--oro); margin:20px 0 0 0;">| Pan Premium</p>
-            <textarea id="adm-premium-txt" placeholder="Beneficios Pan Premium"></textarea>
-            <input type="number" id="adm-premium-precio" placeholder="Precio Pan Premium">
-            
-            <button class="btn-uqt" onclick="guardarPlanesAdmin()">ACTUALIZAR PLANES</button>
+            <b>Miga:</b>
+            <textarea id="adm-miga-ben" placeholder="Beneficios Miga"></textarea>
+            <input type="text" id="adm-miga-pr" placeholder="Precio Miga">
+            <hr>
+            <b>Pan:</b>
+            <textarea id="adm-pan-ben" placeholder="Beneficios Pan"></textarea>
+            <input type="text" id="adm-pan-pr" placeholder="Precio Pan">
+            <hr>
+            <b>Pan Premium:</b>
+            <textarea id="adm-premium-ben" placeholder="Beneficios Pan Premium"></textarea>
+            <input type="text" id="adm-premium-pr" placeholder="Precio Pan Premium">
+            <button class="btn-uqt" onclick="actualizarPlanes()">Actualizar Planes</button>
         </div>
 
         <div class="sec-divider">📧 ENVIAR CORREO UQT</div>
@@ -202,22 +228,11 @@
         const auth = firebase.auth(); const db = firebase.firestore();
 
         let globalServicios = [];
-        let planEnProceso = { nombre: '', precio: 0 };
+        let planSeleccionado = null;
+        let precioSeleccionado = "";
 
         function inicializarApp() {
-            // Escuchar cambios de planes (Admin)
-            db.collection('config').doc('planes').onSnapshot(d => {
-                if(d.exists){
-                    const p = d.data();
-                    document.getElementById('p-miga-val').innerText = p.migaP;
-                    document.getElementById('t-miga-ben').innerText = p.migaT;
-                    document.getElementById('p-pan-val').innerText = p.panP;
-                    document.getElementById('t-pan-ben').innerText = p.panT;
-                    document.getElementById('p-premium-val').innerText = p.premiumP;
-                    document.getElementById('t-premium-ben').innerText = p.premiumT;
-                }
-            });
-
+            // Cargar Config Visual
             db.collection('config').doc('visuales').onSnapshot(d => {
                 if(d.exists){
                     const data = d.data();
@@ -230,6 +245,19 @@
                 }
             });
 
+            // Cargar Config Planes
+            db.collection('config').doc('planes').onSnapshot(d => {
+                if(d.exists){
+                    const p = d.data();
+                    document.getElementById('ben-miga').innerText = p.miga.ben;
+                    document.getElementById('pr-miga').innerText = p.miga.pr;
+                    document.getElementById('ben-pan').innerText = p.pan.ben;
+                    document.getElementById('pr-pan').innerText = p.pan.pr;
+                    document.getElementById('ben-premium').innerText = p.premium.ben;
+                    document.getElementById('pr-premium').innerText = p.premium.pr;
+                }
+            });
+
             db.collection('itinerarios').doc('servicios').onSnapshot(d => {
                 if(d.exists) {
                     globalServicios = d.data().servicios || [];
@@ -239,7 +267,7 @@
 
             auth.onAuthStateChanged(user => {
                 if(user) {
-                    document.getElementById('card-user-id').innerText = "ID: " + user.email;
+                    document.getElementById('display-uqt-id').innerText = user.email.split('@')[0].toUpperCase();
                     db.collection('buzon').where("para", "==", user.email).orderBy("timestamp", "desc").onSnapshot(snap => {
                         const lista = document.getElementById('lista-correos');
                         lista.innerHTML = snap.docs.map(doc => {
@@ -256,52 +284,58 @@
             });
         }
 
-        // --- LÓGICA DE COMPRA DE PLANES ---
-        function abrirPago(nombre, precio) {
-            planEnProceso = { nombre, precio };
-            document.getElementById('bancogato-checkout').style.display = 'block';
-            document.getElementById('bg-total').innerText = "R$ " + precio.toLocaleString();
-            document.getElementById('bancogato-checkout').scrollIntoView();
+        // --- LÓGICA DE PLANES ---
+        function prepararCompra(nombre, id) {
+            planSeleccionado = nombre;
+            precioSeleccionado = document.getElementById('pr-' + id).innerText;
+            document.getElementById('pay-total').innerText = "R$ " + precioSeleccionado;
+            document.getElementById('checkout-modal').style.display = 'flex';
         }
 
-        async function procesarCompraPlan() {
-            const nombreCli = document.getElementById('bg-nombre').value;
-            if(!nombreCli) return alert("Ingresa tu nombre");
+        function cerrarCheckout() {
+            document.getElementById('checkout-modal').style.display = 'none';
+        }
 
-            // SIMULACIÓN BANCOGATO (Aquí podrías conectar con la otra web)
-            // Para el ejemplo, simularemos un error si el precio es demasiado alto
-            const saldoSimulado = 50000; // Supongamos que el usuario tiene 50k en BancoGato
+        async function finalizarCompra() {
+            const nombre = document.getElementById('pay-nombre').value;
+            if(!nombre) return alert("Por favor completa tu nombre.");
 
-            if(planEnProceso.precio > saldoSimulado) {
-                alert("Compra errónea: Dinero insuficiente en BancoGato");
-            } else {
-                await db.collection('usuarios').doc(auth.currentUser.email).update({
-                    plan: planEnProceso.nombre,
-                    nombreReal: nombreCli
-                });
-                alert(`Excelente, ahora eres [${planEnProceso.nombre}].\nTienes 3 días para pedir un reembolso en caso de compra errónea pero con una comisión de R$ 0 (un día), R$ 100 (2do Día), y R$ 1.000 (3er día)`);
-                document.getElementById('bancogato-checkout').style.display = 'none';
+            // Simulación de validación de BancoGato (Para fines de Rol/Simulación)
+            if(confirm("¿Confirmar pago con BancoGato?")) {
+                try {
+                    await db.collection('usuarios').doc(auth.currentUser.email).update({
+                        plan: planSeleccionado,
+                        nombreCompleto: nombre
+                    });
+                    alert(`Excelente, ahora eres [${planSeleccionado}].\nTienes 3 días para pedir un reembolso en caso de compra errónea pero con una comisión de R$ 0 (un día), R$ 100 (2do Día), y R$ 1.000 (3er día)`);
+                    cerrarCheckout();
+                } catch(e) {
+                    alert("Compra errónea: Dinero insuficiente en BancoGato");
+                }
             }
         }
 
-        async function guardarPlanesAdmin() {
+        async function actualizarPlanes() {
             await db.collection('config').doc('planes').set({
-                migaP: document.getElementById('adm-miga-precio').value,
-                migaT: document.getElementById('adm-miga-txt').value,
-                panP: document.getElementById('adm-pan-precio').value,
-                panT: document.getElementById('adm-pan-txt').value,
-                premiumP: document.getElementById('adm-premium-precio').value,
-                premiumT: document.getElementById('adm-premium-txt').value
+                miga: { ben: document.getElementById('adm-miga-ben').value, pr: document.getElementById('adm-miga-pr').value },
+                pan: { ben: document.getElementById('adm-pan-ben').value, pr: document.getElementById('adm-pan-pr').value },
+                premium: { ben: document.getElementById('adm-premium-ben').value, pr: document.getElementById('adm-premium-pr').value }
             });
-            alert("Planes actualizados");
+            alert("Planes actualizados en DB.");
         }
 
-        // (Resto de funciones originales se mantienen intactas)
+        // --- LÓGICA ADMIN (REPARADA PARA UQTMAIL) ---
         function cargarUsuariosAdmin() {
             db.collection('usuarios').onSnapshot(snap => {
                 const select = document.getElementById('adm-c-usuario-select');
                 select.innerHTML = '<option value="">-- Seleccionar Usuario --</option>';
-                snap.forEach(doc => { select.innerHTML += `<option value="${doc.id}">${doc.id}</option>`; });
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    const email = doc.id;
+                    const plan = u.plan || "Sin Plan";
+                    // Formato: email [plan]
+                    select.innerHTML += `<option value="${email}">${email} [${plan}]</option>`;
+                });
             });
         }
 
@@ -310,11 +344,19 @@
             const asunto = document.getElementById('adm-c-asunto').value;
             const mensaje = document.getElementById('adm-c-texto').value;
             const remitente = document.getElementById('adm-c-remitente').value;
+
             if(!para || !asunto || !mensaje) return alert("Faltan datos");
-            await db.collection('buzon').add({ para, asunto, mensaje, remitente, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("UQTmail enviado.");
+
+            await db.collection('buzon').add({
+                para, asunto, mensaje, remitente,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("UQTmail enviado correctamente.");
+            document.getElementById('adm-c-asunto').value = "";
+            document.getElementById('adm-c-texto').value = "";
         }
 
+        // --- FUNCIONES CORE ---
         function abrirCarta(de, asunto, msg) {
             document.getElementById('carta-modal').style.display = 'flex';
             document.getElementById('carta-contenido').innerHTML = `<b>DE:</b> ${de}<br><b>ASUNTO:</b> ${asunto}<hr>${msg.replace(/\n/g, '<br>')}`;
@@ -323,11 +365,15 @@
         function ingresar() {
             const email = document.getElementById('log-email').value;
             const pass = document.getElementById('log-pass').value;
-            auth.signInWithEmailAndPassword(email, pass).then(async () => {
-                await db.collection('usuarios').doc(email).set({ email: email, lastLogin: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            auth.signInWithEmailAndPassword(email, pass)
+            .then(async () => {
+                await db.collection('usuarios').doc(email).set({
+                    email: email,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
                 document.getElementById('auth-screen').style.display='none'; 
                 document.getElementById('app-6').style.display='block'; 
-            }).catch(() => alert("Error"));
+            }).catch(() => alert("Credenciales Incorrectas"));
         }
 
         function renderizarServicios(servicios) {
@@ -362,19 +408,19 @@
                 hasta: document.getElementById('compra-hasta').value,
                 servicio: servicioSeleccionado.ramal, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("Ticket: " + ticket);
+            alert("Boleto emitido: " + ticket);
             document.getElementById('compra-interactiva').style.display = 'none';
         }
 
         function cerrarSesion() { auth.signOut().then(() => location.reload()); }
-        function accesoAdmin() { if(prompt("Acceso:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
+        function accesoAdmin() { if(prompt("Clave de Acceso:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
         async function actualizarConfig() {
             await db.collection('config').doc('visuales').set({ marquee: document.getElementById('adm-marquee').value, loginTxt: document.getElementById('adm-login-txt').value, imgAnuncio: document.getElementById('adm-img-url').value }, { merge: true });
-            alert("OK");
+            alert("Configuración Guardada.");
         }
         async function enviarSoporte() {
             await db.collection('soporte').add({ usuario: auth.currentUser.email, mensaje: document.getElementById('soporte-msg').value, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Enviado"); document.getElementById('soporte-msg').value = "";
+            alert("Reporte Enviado."); document.getElementById('soporte-msg').value = "";
         }
         setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
