@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UQT S.A. | v6.6.5 Buzón Pro</title>
+    <title>UQT S.A. | v6.6.0 Buzón Interno</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -73,7 +73,7 @@
 
         <div class="sec-divider">📬 Buzon UQT</div>
         <div style="padding: 0 20px;">
-            <p style="font-size: 0.7rem; color: #aaa; margin-bottom: 10px;">Este buzón es interno para soporte y más.</p>
+            <p style="font-size: 0.7rem; color: #aaa; margin-bottom: 10px;">Este buzón es interno para soporte y más, si lo ves más preferible puedes contactar a <b>UQTServicios@hotmail.com</b></p>
             <div id="lista-correos"></div>
         </div>
 
@@ -91,6 +91,7 @@
             <label>Hasta:</label>
             <input type="text" id="compra-hasta" readonly style="background:#222; color:#fff">
             <p>Precio Tramo: <b id="compra-precio">R$ 0.00</b></p>
+            <p style="font-size:0.7rem;">Soporte: UQTServicios@hotmail.com</p>
             <button class="btn-uqt" onclick="confirmarCompra()">CONFIRMAR BOLETO</button>
             <button class="btn-uqt" style="background:#444; color:white; margin-top:5px;" onclick="this.parentElement.style.display='none'">CANCELAR</button>
         </div>
@@ -98,8 +99,10 @@
         <div class="sec-divider">🎧 Soporte Técnico</div>
         <div style="padding: 20px;">
             <div class="item-card" style="cursor:default">
+                <p>¿Tienes algún problema? Déjanos un mensaje.</p>
                 <textarea id="soporte-msg" placeholder="Describe tu problema aquí..."></textarea>
                 <button class="btn-uqt" onclick="enviarSoporte()">Enviar Reporte</button>
+                <p style="text-align: center; font-size: 0.8rem;">Email: UQTServicios@hotmail.com</p>
             </div>
         </div>
     </div>
@@ -112,7 +115,7 @@
 
         <div class="sec-divider">📧 ENVIAR CORREO UQT</div>
         <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
-            <label style="font-size:0.8rem; color:var(--verde)">Seleccionar Destinatario (UQTmail):</label>
+            <label style="color:var(--verde); font-size: 0.8rem;">Seleccionar Usuario Registrado:</label>
             <select id="adm-c-usuario-select">
                 <option value="">Cargando usuarios...</option>
             </select>
@@ -200,7 +203,8 @@
                             </div>`;
                         }).join('');
                     });
-                    cargarUsuariosSelect();
+                    // Cargar usuarios para el Admin
+                    cargarUsuariosAdmin();
                 }
             });
 
@@ -218,14 +222,18 @@
             });
         }
 
-        // NUEVA FUNCIÓN: Carga los usuarios registrados en el select del Admin
-        function cargarUsuariosSelect() {
-            db.collection('usuarios').get().then(snap => {
+        // --- GESTIÓN DE USUARIOS (UQTmail) ---
+        function cargarUsuariosAdmin() {
+            db.collection('usuarios').onSnapshot(snap => {
                 const select = document.getElementById('adm-c-usuario-select');
-                select.innerHTML = '<option value="">-- Seleccionar Usuario --</option>';
+                select.innerHTML = '<option value="">-- Seleccionar Destinatario --</option>';
                 snap.forEach(doc => {
-                    const userEmail = doc.id; // Asumiendo que el ID del documento es el email
-                    select.innerHTML += `<option value="${userEmail}">${userEmail}</option>`;
+                    const u = doc.data();
+                    const nombreStr = u.nombre || "Usuario";
+                    const planStr = u.plan || "pasajero";
+                    const emailStr = u.email || doc.id;
+                    // Formato solicitado: Nombre (Email) [Plan]
+                    select.innerHTML += `<option value="${emailStr}">${nombreStr} (${emailStr}) [${planStr.toUpperCase()}]</option>`;
                 });
             });
         }
@@ -236,13 +244,16 @@
             const mensaje = document.getElementById('adm-c-texto').value;
             const remitente = document.getElementById('adm-c-remitente').value;
 
-            if(!para || !asunto || !mensaje) return alert("Selecciona un destinatario y completa los campos.");
+            if(!para || !asunto || !mensaje) return alert("Faltan datos");
 
             await db.collection('buzon').add({
-                para, asunto, mensaje, remitente,
+                para: para, 
+                asunto: asunto, 
+                mensaje: mensaje, 
+                remitente: remitente,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("UQTmail enviado con éxito a " + para);
+            alert("UQTmail enviado correctamente.");
             document.getElementById('adm-c-asunto').value = "";
             document.getElementById('adm-c-texto').value = "";
         }
@@ -256,10 +267,11 @@
                 <hr style="border:0; border-top:1px dashed #ccc;"><br>
                 ${msg}
                 <br><br><br>
-                <small style="color:#555;"><i>UQT S.A. División Comunicaciones.</i></small>
+                <small style="color:#555;"><i>UQT S.A. División Comunicaciones. No responder a este buzón.</i></small>
             `;
         }
 
+        // --- LÓGICA DE COMPRA Y SERVICIOS ---
         function iniciarCompra(sId, pNombre) {
             const s = globalServicios.find(x => x.ramal === sId);
             if(!s) return;
@@ -335,31 +347,43 @@
             `).join('');
         }
 
+        // --- SISTEMA DE ACCESO ---
         function ingresar() {
             const email = document.getElementById('log-email').value;
             const pass = document.getElementById('log-pass').value;
+            
             auth.signInWithEmailAndPassword(email, pass)
-            .then((userCredential) => {
-                // Guardar usuario en la colección 'usuarios' para que aparezca en el select del Admin
-                db.collection('usuarios').doc(email).set({ email: email }, { merge: true });
+            .then(async (userCredential) => {
+                // Registrar/Actualizar usuario en la colección "usuarios" para que aparezca en el Admin
+                await db.collection('usuarios').doc(email).set({
+                    email: email,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
                 document.getElementById('auth-screen').style.display='none'; 
                 document.getElementById('app-6').style.display='block'; 
             })
-            .catch(() => alert("Error de acceso"));
+            .catch(() => alert("Credenciales incorrectas"));
         }
 
         function cerrarSesion() { auth.signOut().then(() => location.reload()); }
-        function accesoAdmin() { if(prompt("Clave:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
         
+        function accesoAdmin() { 
+            if(prompt("Clave de Acceso Universal:") === "UnionQuintanaTuri2012@_") {
+                document.getElementById('admin-overlay').style.display = 'block'; 
+            }
+        }
+
         async function actualizarConfig() {
             await db.collection('config').doc('visuales').set({ marquee: document.getElementById('adm-marquee').value, loginTxt: document.getElementById('adm-login-txt').value, imgAnuncio: document.getElementById('adm-img-url').value }, { merge: true });
-            alert("Configuración actualizada.");
+            alert("OK");
         }
 
         async function enviarSoporte() {
             await db.collection('soporte').add({ usuario: auth.currentUser.email, mensaje: document.getElementById('soporte-msg').value, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Reporte enviado."); document.getElementById('soporte-msg').value = "";
+            alert("Enviado"); document.getElementById('soporte-msg').value = "";
         }
+
         setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
