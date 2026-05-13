@@ -3,57 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UQT S.A. | v6.9.2 Nexus Corporation</title>
+    <title>UQT S.A. | v6.9.0 Nexus Corporation</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --azul: #16538d; --verde: #32CD32; --fondo: #0a0a0a; --panel: #1a1a1a; --oro: #FFD700; --texto: #ffffff; --rojo: #ff4444; --nexus: #6a5acd; }
+        :root { --azul: #16538d; --verde: #32CD32; --fondo: #0a0a0a; --panel: #1a1a1a; --oro: #FFD700; --texto: #ffffff; --rojo: #ff4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--fondo); color: var(--texto); overflow-x: hidden; }
         
         input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; background: #111; color: var(--verde); border: 1px solid #333; box-sizing: border-box; outline: none; }
-        .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
+        .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; margin-top: 5px; }
         .btn-uqt:active { transform: scale(0.98); }
 
-        /* Estilo Tarjeta UQT mejorada */
-        .uqt-card-container { background: linear-gradient(135deg, var(--verde), #228B22); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .uqt-card-container { background: linear-gradient(135deg, #1e1e1e, #111); border: 2px solid var(--verde); border-radius: 15px; padding: 20px; margin: 20px; color: #fff; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(50,205,50,0.2); }
         .uqt-card-logo { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
         .uqt-card-logo span.u { color: var(--azul); }
         .uqt-card-logo span.c { color: var(--rojo); }
-        .uqt-card-id { font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; border: 1px dashed rgba(0,0,0,0.3); }
-        .uqt-card-saldo { margin-top: 10px; font-size: 1.2rem; font-weight: 800; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 5px; }
-
-        #auth-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .login-label { color: #888; font-size: 0.85rem; margin-bottom: 5px; width: 100%; max-width: 320px; text-align: left; }
+        .uqt-card-id { font-family: monospace; font-weight: bold; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 4px; border: 1px dashed var(--verde); }
+        .uqt-card-saldo { margin-top: 10px; font-size: 1.2rem; font-weight: 800; border-top: 1px solid #333; padding-top: 5px; color: var(--verde); }
+        
+        #auth-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; text-align: center; }
+        .nexus-label { color: #ccc; font-size: 1.1rem; margin-bottom: 15px; font-weight: 300; }
+        .forgot-pass { font-size: 0.75rem; color: #666; margin: 10px 0; line-height: 1.2; }
         
         .header-top { display: flex; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #222; background: #000; position: sticky; top: 0; z-index: 10; font-family: monospace; align-items: center; }
         .sec-divider { border-left: 4px solid var(--verde); padding-left: 12px; margin: 25px 20px 10px; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         
         .item-card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; transition: 0.2s; }
-        
+        .item-card h3 { margin: 0; color: var(--verde); font-size: 1.1rem; }
+
         #nexus-footer { background: #050505; color: #555; padding: 40px 20px; text-align: center; border-top: 1px solid #111; font-family: 'Segoe UI', sans-serif; margin-top: 50px; }
     </style>
 </head>
 <body onload="inicializarApp()">
 
-    <div id="marquee-top"><marquee id="txt-marquee" scrollamount="7">Bienvenidos a la nueva era: Nexus Corporation</marquee></div>
+    <div id="marquee-top"><marquee id="txt-marquee" scrollamount="7">Cargando sistema Nexus...</marquee></div>
 
     <div id="auth-screen">
-        <img src="https://i.postimg.cc/sgPtr7Cm/1773207513022-2.jpg" height="80" style="border-radius: 50%; border: 3px solid var(--nexus); margin-bottom: 5px;">
-        <h2 style="color:white; margin-bottom:20px; letter-spacing: 2px;">NEXUS</h2>
+        <img src="https://i.postimg.cc/9QdMhKhQ/Screenshot-20260513-000540-(1).jpg" height="120" style="margin-bottom: 10px; border-radius: 10px;">
+        <div class="nexus-label">Use una Cuenta Nexus o Cree una</div>
         
-        <div class="login-label">Ingrese una Cuenta Nexus o Cree una:</div>
         <div id="login-form" style="width: 100%; max-width: 320px;">
-            <input type="email" id="log-email" placeholder="email@nexus.com">
+            <input type="email" id="log-email" placeholder="Email">
             <input type="password" id="log-pass" placeholder="Contraseña">
-            <button class="btn-uqt" onclick="ingresar()">🔐 Iniciar Sesión</button>
-            <button class="btn-uqt" style="background: #111; color: #666; margin-top: 10px; border: 1px solid #222;" onclick="accesoAdmin()">Soporte Nexus</button>
+            
+            <p class="forgot-pass">
+                ¿Olvidó su contraseña? Valió porque nosotros aún no tenemos recuperación. 
+                Envié un email a <span style="color:var(--verde)">UQTServicios@hotmail.com</span>
+            </p>
+
+            <button class="btn-uqt" onclick="ingresar()">Iniciar Sesión</button>
+            <button class="btn-uqt" style="background: #222; color: #fff;" onclick="crearCuenta()">Crear Cuenta</button>
+            <button class="btn-uqt" style="background: transparent; color: #444; border: 1px solid #222; font-size: 0.7rem;" onclick="accesoAdmin()">Admin Panel</button>
         </div>
     </div>
 
     <div id="app-6" style="display:none;">
         <div class="header-top">
-            <span>UQT S.A. ● NEXUS INFRASTRUCTURE</span>
+            <span>UQT S.A. ● NEXUS CORPORATION</span>
             <span id="reloj">--:--</span>
             <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.7rem; font-weight:bold;">SALIR</button>
         </div>
@@ -62,14 +69,14 @@
             <div class="uqt-card-logo"><span class="u">UQT</span><span class="c">Card</span></div>
             <p>ID Nexus: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
             <div class="uqt-card-saldo">Saldo UQTCard: R$ <span id="display-uqt-saldo">0.00</span></div>
-            <p style="font-size:0.75rem; margin-top:10px;">Sincronizado con su <b>GatoCard</b> de Nexus Corporation.</p>
+            <p style="font-size:0.7rem; margin-top:10px; opacity: 0.6;">Sincronizado con su GatoCard.</p>
         </div>
 
         <div class="sec-divider">🎟️ Canjear Código Nexus</div>
         <div style="padding: 0 20px;">
             <div class="item-card" style="cursor:default">
-                <input type="text" id="redeem-code" placeholder="Pega tu código corporativo">
-                <button class="btn-uqt" onclick="canjearCodigo()">Canjear en UQTCard</button>
+                <input type="text" id="redeem-code" placeholder="Código de recarga">
+                <button class="btn-uqt" onclick="canjearCodigo()">Aplicar a UQTCard</button>
             </div>
         </div>
 
@@ -80,83 +87,87 @@
         <div id="lista-buses" class="list-container"></div>
     </div>
 
-    <div id="nexus-footer">
-        <div style="max-width: 400px; margin: 0 auto;">
-            <img src="https://i.postimg.cc/195319.png" height="40" style="margin-bottom: 10px;">
-            <p style="color: #var(--nexus); font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; font-size: 0.8rem;">PRODUCTO DE NEXUS CORPORATION</p>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
-                <a href="#" style="color: #32CD32; text-decoration: none; font-size: 0.9rem;">🚉 Red Ferroviaria UQT</a>
-                <a href="#" style="color: #6a5acd; text-decoration: none; font-size: 0.9rem;">💳 Gestión Nexus Account</a>
-            </div>
-            <p style="font-size: 0.6rem; color: #333;">&copy; 2026 Nexus Corp. Todos los derechos reservados. El uso de la Cuenta Nexus está sujeto a términos de privacidad.</p>
-        </div>
-    </div>
-
     <script>
+        // Configuración Firebase (Se mantiene igual)
         const firebaseConfig = { apiKey: "AIzaSyA58MXpItx1F9zNnJbyeS_4FT_onYx9wig", authDomain: "uqt-virtual.firebaseapp.com", projectId: "uqt-virtual", storageBucket: "uqt-virtual.appspot.com", messagingSenderId: "777641217730", appId: "1:777641217730:web:8c5b5f9b4c7d8e2a" };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(); const db = firebase.firestore();
 
         function inicializarApp() {
+            // Escuchar cambios visuales de Nexus
+            db.collection('config').doc('visuales').onSnapshot(d => {
+                if(d.exists) document.getElementById('txt-marquee').innerText = d.data().marquee || "Nexus Corporation System Online";
+            });
+
             auth.onAuthStateChanged(user => {
                 if(user) {
                     document.getElementById('display-uqt-id').innerText = user.email.split('@')[0].toUpperCase();
                     
-                    // SINCRO: Escuchar Saldo en colección UQTCard
+                    // SINCRONIZACIÓN: Escuchamos la colección de UQTCard (Nexus Sync)
                     db.collection('usuarios_uqtcard').doc(user.uid).onSnapshot(doc => {
                         if(doc.exists) {
                             document.getElementById('display-uqt-saldo').innerText = (doc.data().saldo || 0).toLocaleString();
                         } else {
-                            // Crear documento inicial si no existe
+                            // Crear perfil inicial si es nuevo
                             db.collection('usuarios_uqtcard').doc(user.uid).set({ saldo: 0, email: user.email });
                         }
                     });
+                    
+                    document.getElementById('auth-screen').style.display='none'; 
+                    document.getElementById('app-6').style.display='block';
                 }
             });
         }
 
+        async function ingresar() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Error Nexus: " + e.message));
+        }
+
+        async function crearCuenta() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            if(!email || !pass) return alert("Complete los datos");
+            auth.createUserWithEmailAndPassword(email, pass).then(cred => {
+                // Al crear cuenta Nexus, inicializamos ambas tarjetas
+                db.collection('usuarios_gatocard').doc(cred.user.uid).set({ saldo: 0, email });
+                db.collection('usuarios_uqtcard').doc(cred.user.uid).set({ saldo: 0, email });
+                alert("Cuenta Nexus creada con éxito");
+            }).catch(e => alert(e.message));
+        }
+
         async function canjearCodigo() {
             const codeInput = document.getElementById('redeem-code').value.trim();
-            if(!codeInput) return alert("Ingresa un código.");
+            if(!codeInput) return;
             
             const snap = await db.collection('canjes').where("codigo", "==", codeInput).get();
-            if(snap.empty) return alert("Código Nexus inválido.");
+            if(snap.empty) return alert("Código Nexus inválido");
             
-            const codeDoc = snap.docs[0];
-            const valor = codeDoc.data().valor;
-            
-            // La carga se realiza a la UQTCard (Nueva Colección)
+            const valor = snap.docs[0].data().valor;
+            // La GatoCard carga a la UQTCard
             await db.collection('usuarios_uqtcard').doc(auth.currentUser.uid).update({
                 saldo: firebase.firestore.FieldValue.increment(valor)
             });
-            
-            await codeDoc.ref.delete();
-            alert(`¡Éxito! Nexus ha acreditado R$ ${valor} a tu UQTCard.`);
+            await snap.docs[0].ref.delete();
+            alert("R$ " + valor + " cargados desde Nexus Sync");
             document.getElementById('redeem-code').value = "";
         }
 
-        function ingresar() {
-            const email = document.getElementById('log-email').value;
-            const pass = document.getElementById('log-pass').value;
-            auth.signInWithEmailAndPassword(email, pass).then(async (cred) => {
-                // Sincronizar datos de sesión en Nexus Cloud
-                await db.collection('nexus_accounts').doc(cred.user.uid).set({ 
-                    email: email, 
-                    lastNexusLogin: firebase.firestore.FieldValue.serverTimestamp() 
-                }, { merge: true });
-                
-                document.getElementById('auth-screen').style.display='none'; 
-                document.getElementById('app-6').style.display='block'; 
-            }).catch(() => alert("Error de Cuenta Nexus: Verifique sus credenciales."));
-        }
-
         function cerrarSesion() { auth.signOut().then(() => location.reload()); }
-        function accesoAdmin() { if(prompt("Nexus Override Code:") === "Nexus2026") alert("Acceso concedido al terminal."); }
-        
-        setInterval(() => { 
-            const now = new Date();
-            document.getElementById('reloj').innerText = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0'); 
-        }, 1000);
+        function accesoAdmin() { if(prompt("Acceso Nexus:") === "NexusAdmin2026") alert("Bienvenido Administrador"); }
+        setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
+
+    <div id="nexus-footer">
+        <div style="max-width: 400px; margin: 0 auto;">
+            <p style="color: var(--verde); font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; font-size: 0.8rem;">PLATAFORMA NEXUS CORPORATION</p>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+                <a href="#" style="color: #98ff98; text-decoration: none; font-size: 1rem;">🐾 BancoGato Sync</a>
+                <a href="#" style="color: #32CD32; text-decoration: none; font-size: 1rem;">🚉 Nexus Ferroviaria</a>
+            </div>
+            <p style="font-size: 0.65rem;">&copy; 2026 Nexus Corp. Infrastructure v6.9.0</p>
+        </div>
+    </div>
 </body>
 </html>
