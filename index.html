@@ -3,127 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UQT S.A. | v6.8.7 Corporativo Full</title>
+    <title>UQT S.A. | v6.9.2 Nexus Corporation</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --azul: #16538d; --verde: #32CD32; --fondo: #0a0a0a; --panel: #1a1a1a; --oro: #FFD700; --texto: #ffffff; --rojo: #ff4444; }
+        :root { --azul: #16538d; --verde: #32CD32; --fondo: #0a0a0a; --panel: #1a1a1a; --oro: #FFD700; --texto: #ffffff; --rojo: #ff4444; --nexus: #6a5acd; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--fondo); color: var(--texto); overflow-x: hidden; }
         
         input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; background: #111; color: var(--verde); border: 1px solid #333; box-sizing: border-box; outline: none; }
         .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
         .btn-uqt:active { transform: scale(0.98); }
 
-        .uqt-card-container { background: var(--verde); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* Estilo Tarjeta UQT mejorada */
+        .uqt-card-container { background: linear-gradient(135deg, var(--verde), #228B22); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .uqt-card-logo { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
         .uqt-card-logo span.u { color: var(--azul); }
         .uqt-card-logo span.c { color: var(--rojo); }
         .uqt-card-id { font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; border: 1px dashed rgba(0,0,0,0.3); }
         .uqt-card-saldo { margin-top: 10px; font-size: 1.2rem; font-weight: 800; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 5px; }
-        
-        .planes-container { padding: 0 20px 40px 20px; }
-        .plan-card { background: var(--panel); border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 15px; transition: 0.3s; }
-        .plan-card h3 { margin-top: 0; color: var(--oro); }
-        .plan-beneficios { font-size: 0.85rem; line-height: 1.4; color: #ccc; margin-bottom: 10px; }
 
-        #checkout-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:80000; padding:20px; flex-direction:column; align-items:center; justify-content:center; }
-        .checkout-box { background: #fff; color: #000; padding: 20px; border-radius: 12px; width: 100%; max-width: 350px; }
-        .bg-card-input { display: flex; gap: 5px; }
-        .bg-card-input input { background: #eee; color: #000; border: 1px solid #ccc; text-align: center; padding: 10px 5px; }
-
-        #marquee-top { background: #000; color: var(--oro); border-bottom: 1px solid var(--oro); padding: 5px 0; font-family: monospace; font-weight: bold; }
         #auth-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .login-alert-box { background: rgba(255, 215, 0, 0.1); border: 2px solid var(--oro); padding: 15px; border-radius: 8px; color: var(--oro); font-weight: bold; margin-bottom: 15px; width: 100%; max-width: 320px; text-align: center; font-size: 0.9rem; }
-        #anuncio-img-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 60000; align-items: center; justify-content: center; }
-        .close-anuncio { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer; font-weight: bold; }
+        .login-label { color: #888; font-size: 0.85rem; margin-bottom: 5px; width: 100%; max-width: 320px; text-align: left; }
+        
         .header-top { display: flex; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #222; background: #000; position: sticky; top: 0; z-index: 10; font-family: monospace; align-items: center; }
         .sec-divider { border-left: 4px solid var(--verde); padding-left: 12px; margin: 25px 20px 10px; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-        .list-container { padding: 0 20px; }
-        .item-card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; transition: 0.2s; }
-        .item-card h3 { margin: 0; color: var(--verde); font-size: 1.1rem; }
         
-        #admin-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 30000; padding: 25px; overflow-y: auto; }
-        .receptor-card { background: #111; border: 1px solid #333; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; }
-        .parada-edit { background: #222; padding: 10px; border-radius: 8px; margin-top: 5px; }
-
-        #carta-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:70000; padding:20px; overflow-y:auto; flex-direction:column; align-items:center; }
-        .hoja-uqt { background-image: url('https://i.postimg.cc/DfSB1gr8/1778130391359-(1).jpg'); background-size: 100% 100%; width: 100%; max-width: 450px; min-height: 600px; padding: 100px 40px 60px 40px; color: #000; box-sizing: border-box; font-family: serif; position: relative; }
+        .item-card { background: var(--panel); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; transition: 0.2s; }
+        
+        #nexus-footer { background: #050505; color: #555; padding: 40px 20px; text-align: center; border-top: 1px solid #111; font-family: 'Segoe UI', sans-serif; margin-top: 50px; }
     </style>
 </head>
 <body onload="inicializarApp()">
 
-    <div id="marquee-top"><marquee id="txt-marquee" scrollamount="7">...</marquee></div>
-
-    <div id="anuncio-img-overlay">
-        <span class="close-anuncio" onclick="this.parentElement.style.display='none'">X</span>
-        <img id="img-anuncio-src" src="" style="max-width: 90%; max-height: 80%; border: 3px solid var(--oro); border-radius: 15px;">
-    </div>
-
-    <div id="checkout-modal">
-        <div class="checkout-box">
-            <h3 style="margin-top:0;">💳 Checkout BancoGato</h3>
-            <p style="font-size:0.85rem;">Genial, completa esto antes de tu compra</p>
-            <label style="font-size:0.7rem;">Nombre y apellido:</label>
-            <input type="text" id="pay-nombre" placeholder="Ej: Juan Pérez">
-            <label style="font-size:0.7rem;">Tarjeta (solo BancoGato):</label>
-            <div class="bg-card-input">
-                <input type="text" maxlength="4" placeholder="XXXX">
-                <input type="text" maxlength="4" placeholder="XXXX">
-                <input type="text" maxlength="4" placeholder="XXXX">
-                <input type="text" maxlength="4" placeholder="XXXX">
-            </div>
-            <label style="font-size:0.7rem;">CVV:</label>
-            <input type="text" maxlength="3" placeholder="XXX" style="width:60px;">
-            <h2 style="text-align:center;">TOTAL: <span id="pay-total">R$ 0</span></h2>
-            <button class="btn-uqt" style="background:var(--azul); color:#fff;" onclick="finalizarCompra()">REALIZAR COMPRA</button>
-            <button class="btn-uqt" style="background:#ccc; margin-top:10px;" onclick="cerrarCheckout()">CANCELAR</button>
-        </div>
-    </div>
-
-    <div id="carta-modal">
-        <button class="btn-uqt" style="width:auto; margin-bottom:10px; background:var(--rojo); color:#fff;" onclick="document.getElementById('carta-modal').style.display='none'">CERRAR CORREO</button>
-        <div class="hoja-uqt">
-            <div id="carta-contenido" style="white-space: pre-wrap; line-height: 1.4; font-size: 0.95rem;"></div>
-        </div>
-    </div>
+    <div id="marquee-top"><marquee id="txt-marquee" scrollamount="7">Bienvenidos a la nueva era: Nexus Corporation</marquee></div>
 
     <div id="auth-screen">
-        <img src="https://i.postimg.cc/sgPtr7Cm/1773207513022-2.jpg" height="100" style="border-radius: 50%; border: 3px solid var(--verde); margin-bottom: 15px;">
-        <div class="login-alert-box" id="txt-login-alert">Cargando...</div>
+        <img src="https://i.postimg.cc/sgPtr7Cm/1773207513022-2.jpg" height="80" style="border-radius: 50%; border: 3px solid var(--nexus); margin-bottom: 5px;">
+        <h2 style="color:white; margin-bottom:20px; letter-spacing: 2px;">NEXUS</h2>
+        
+        <div class="login-label">Ingrese una Cuenta Nexus o Cree una:</div>
         <div id="login-form" style="width: 100%; max-width: 320px;">
-            <input type="email" id="log-email" placeholder="Usuario institucional">
+            <input type="email" id="log-email" placeholder="email@nexus.com">
             <input type="password" id="log-pass" placeholder="Contraseña">
-            <button class="btn-uqt" onclick="ingresar()">🔐 Acceder al Sistema</button>
-            <button class="btn-uqt" style="background: #111; color: #fff; margin-top: 10px;" onclick="accesoAdmin()">🛠️ Admin Panel</button>
+            <button class="btn-uqt" onclick="ingresar()">🔐 Iniciar Sesión</button>
+            <button class="btn-uqt" style="background: #111; color: #666; margin-top: 10px; border: 1px solid #222;" onclick="accesoAdmin()">Soporte Nexus</button>
         </div>
     </div>
 
     <div id="app-6" style="display:none;">
         <div class="header-top">
-            <span>UQT S.A. ● FERROVIARIA</span>
+            <span>UQT S.A. ● NEXUS INFRASTRUCTURE</span>
             <span id="reloj">--:--</span>
             <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.7rem; font-weight:bold;">SALIR</button>
         </div>
 
         <div class="uqt-card-container">
             <div class="uqt-card-logo"><span class="u">UQT</span><span class="c">Card</span></div>
-            <p>ID: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
-            <div class="uqt-card-saldo">Saldo: R$ <span id="display-uqt-saldo">0.00</span></div>
-            <p style="font-size:0.75rem; margin-top:10px;">Carga desde <b>BancoGato</b> o canjea un código debajo.</p>
+            <p>ID Nexus: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
+            <div class="uqt-card-saldo">Saldo UQTCard: R$ <span id="display-uqt-saldo">0.00</span></div>
+            <p style="font-size:0.75rem; margin-top:10px;">Sincronizado con su <b>GatoCard</b> de Nexus Corporation.</p>
         </div>
 
-        <div class="sec-divider">🎟️ Canjear Código</div>
+        <div class="sec-divider">🎟️ Canjear Código Nexus</div>
         <div style="padding: 0 20px;">
             <div class="item-card" style="cursor:default">
-                <input type="text" id="redeem-code" placeholder="Pega tu código aquí">
-                <button class="btn-uqt" onclick="canjearCodigo()">Canjear Código</button>
+                <input type="text" id="redeem-code" placeholder="Pega tu código corporativo">
+                <button class="btn-uqt" onclick="canjearCodigo()">Canjear en UQTCard</button>
             </div>
-        </div>
-
-        <div class="sec-divider">📬 Buzon UQT</div>
-        <div style="padding: 0 20px;">
-            <div id="lista-correos"></div>
         </div>
 
         <div class="sec-divider">🚉 Estaciones de Tren</div>
@@ -131,108 +78,18 @@
 
         <div class="sec-divider">🚌 Paradas de Bus</div>
         <div id="lista-buses" class="list-container"></div>
-
-        <div id="compra-interactiva" style="display:none; padding: 20px; background: #000; border: 2px solid var(--oro); margin: 20px; border-radius: 15px;">
-            <h3 style="color:var(--oro); margin-top:0;">🎫 Compra de Boleto</h3>
-            <p id="compra-info" style="font-size:0.9rem;"></p>
-            <label>Desde:</label>
-            <select id="compra-desde"></select>
-            <label>Hasta:</label>
-            <input type="text" id="compra-hasta" readonly style="background:#222; color:#fff">
-            <p>Precio Tramo: <b id="compra-precio">R$ 0.00</b></p>
-            <button class="btn-uqt" onclick="confirmarCompra()">CONFIRMAR BOLETO</button>
-            <button class="btn-uqt" style="background:#444; color:white; margin-top:5px;" onclick="this.parentElement.style.display='none'">CANCELAR</button>
-        </div>
-
-        <div class="sec-divider">🎧 Soporte Técnico</div>
-        <div style="padding: 20px;">
-            <div class="item-card" style="cursor:default">
-                <textarea id="soporte-msg" placeholder="Describe tu problema aquí..."></textarea>
-                <button class="btn-uqt" onclick="enviarSoporte()">Enviar Reporte</button>
-            </div>
-        </div>
-
-        <div class="sec-divider">💎 Planes para ti</div>
-        <div class="planes-container">
-            <div class="plan-card">
-                <h3>Miga</h3>
-                <div class="plan-beneficios" id="ben-miga">Cargando...</div>
-                <button class="btn-uqt" onclick="prepararCompra('Miga', 'miga')">Comprar: R$ <span id="pr-miga">0</span></button>
-            </div>
-            <div class="plan-card">
-                <h3>Pan</h3>
-                <div class="plan-beneficios" id="ben-pan">Cargando...</div>
-                <button class="btn-uqt" onclick="prepararCompra('Pan', 'pan')">Comprar: R$ <span id="pr-pan">30.000</span></button>
-            </div>
-            <div class="plan-card">
-                <h3>Pan Premium</h3>
-                <div class="plan-beneficios" id="ben-premium">Cargando...</div>
-                <button class="btn-uqt" onclick="prepararCompra('Pan Premium', 'premium')">Comprar: R$ <span id="pr-premium">80.000</span></button>
-            </div>
-        </div>
     </div>
 
-    <div id="admin-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:var(--verde)">⚙️ RECEPTOR UNIVERSAL</h2>
-            <button onclick="location.reload()" style="background:var(--rojo); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">SALIR</button>
-        </div>
-
-        <div class="sec-divider">🎟️ CREAR CÓDIGO DE CANJEO</div>
-        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
-            <input type="text" id="adm-code-str" placeholder="Código (ej: REGALO2026)">
-            <input type="number" id="adm-code-val" placeholder="Valor: R$">
-            <button class="btn-uqt" onclick="crearCodigo()">CREAR CÓDIGO</button>
-            <h4 style="margin-bottom:5px;">Codigos activos (Un solo uso):</h4>
-            <div id="adm-lista-codigos" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
-        </div>
-
-        <div class="sec-divider">📅 PUBLICAR HORARIO NUEVO</div>
-        <div style="background:var(--panel); padding:15px; border-radius:10px;">
-            <select id="adm-h-tipo"><option value="Tren">Tren</option><option value="Bus">Bus</option></select>
-            <input type="text" id="adm-h-ramal" placeholder="Nombre del Ramal">
-            <input type="number" id="adm-h-precio" placeholder="Precio por parada">
-            <div id="adm-h-intermedia">
-                <div class="parada-edit">
-                    <b>Inicio:</b> <input type="text" class="p-nombre" placeholder="Estación/Parada"> <input type="time" class="p-hora">
-                </div>
+    <div id="nexus-footer">
+        <div style="max-width: 400px; margin: 0 auto;">
+            <img src="https://i.postimg.cc/195319.png" height="40" style="margin-bottom: 10px;">
+            <p style="color: #var(--nexus); font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; font-size: 0.8rem;">PRODUCTO DE NEXUS CORPORATION</p>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+                <a href="#" style="color: #32CD32; text-decoration: none; font-size: 0.9rem;">🚉 Red Ferroviaria UQT</a>
+                <a href="#" style="color: #6a5acd; text-decoration: none; font-size: 0.9rem;">💳 Gestión Nexus Account</a>
             </div>
-            <button class="btn-uqt" style="background:#333; color:white; margin-top:5px;" onclick="addIntermedia()">+ AGREGAR INTERMEDIA</button>
-            <div class="parada-edit">
-                <b>Fin:</b> <input type="text" id="adm-h-fin-nombre" placeholder="Estación/Parada"> <input type="time" id="adm-h-fin-hora">
-            </div>
-            <button class="btn-uqt" style="margin-top:10px;" onclick="subirHorario()">PUBLICAR HORARIO</button>
+            <p style="font-size: 0.6rem; color: #333;">&copy; 2026 Nexus Corp. Todos los derechos reservados. El uso de la Cuenta Nexus está sujeto a términos de privacidad.</p>
         </div>
-
-        <div class="sec-divider">🗑️ GESTIÓN DE HORARIOS</div>
-        <div id="adm-lista-borrar" style="max-height:150px; overflow-y:auto;"></div>
-
-        <div class="sec-divider">💎 CONFIGURAR PLANES</div>
-        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
-            <b>Miga:</b>
-            <textarea id="adm-miga-ben"></textarea><input type="text" id="adm-miga-pr">
-            <hr>
-            <b>Pan:</b>
-            <textarea id="adm-pan-ben"></textarea><input type="text" id="adm-pan-pr">
-            <hr>
-            <b>Pan Premium:</b>
-            <textarea id="adm-premium-ben"></textarea><input type="text" id="adm-premium-pr">
-            <button class="btn-uqt" onclick="actualizarPlanes()">Actualizar Planes</button>
-        </div>
-
-        <div class="sec-divider">📧 ENVIAR CORREO UQT</div>
-        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px;">
-            <select id="adm-c-usuario-select"><option value="">Cargando...</option></select>
-            <input type="text" id="adm-c-asunto" placeholder="Asunto">
-            <textarea id="adm-c-texto" placeholder="Mensaje"></textarea>
-            <button class="btn-uqt" onclick="enviarCorreoInterno()">PUBLICAR CORREO</button>
-        </div>
-
-        <div class="sec-divider">📢 CONFIGURACIÓN VISUAL</div>
-        <input type="text" id="adm-marquee" placeholder="Marquee">
-        <input type="text" id="adm-login-txt" placeholder="Login Alert">
-        <input type="text" id="adm-img-url" placeholder="URL Imagen">
-        <button class="btn-uqt" onclick="actualizarConfig()">Guardar Config</button>
     </div>
 
     <script>
@@ -240,289 +97,66 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(); const db = firebase.firestore();
 
-        let globalServicios = [];
-        let servicioSeleccionado = null;
-        let planSeleccionado = null;
-        let precioSeleccionado = "";
-
         function inicializarApp() {
-            db.collection('config').doc('visuales').onSnapshot(d => {
-                if(d.exists){
-                    const data = d.data();
-                    document.getElementById('txt-marquee').innerText = data.marquee || "";
-                    document.getElementById('txt-login-alert').innerText = data.loginTxt || "";
-                    if(data.imgAnuncio && data.imgAnuncio !== "QuitarImagen") {
-                        document.getElementById('img-anuncio-src').src = data.imgAnuncio;
-                        document.getElementById('anuncio-img-overlay').style.display = 'flex';
-                    }
-                }
-            });
-
-            db.collection('config').doc('planes').onSnapshot(d => {
-                if(d.exists){
-                    const p = d.data();
-                    document.getElementById('ben-miga').innerText = p.miga.ben;
-                    document.getElementById('pr-miga').innerText = p.miga.pr;
-                    document.getElementById('ben-pan').innerText = p.pan.ben;
-                    document.getElementById('pr-pan').innerText = p.pan.pr;
-                    document.getElementById('ben-premium').innerText = p.premium.ben;
-                    document.getElementById('pr-premium').innerText = p.premium.pr;
-                }
-            });
-
-            db.collection('itinerarios').doc('servicios').onSnapshot(d => {
-                if(d.exists) {
-                    globalServicios = d.data().servicios || [];
-                    renderizarServicios(globalServicios);
-                    renderizarListaBorrar(globalServicios);
-                }
-            });
-
             auth.onAuthStateChanged(user => {
                 if(user) {
                     document.getElementById('display-uqt-id').innerText = user.email.split('@')[0].toUpperCase();
                     
-                    // Escuchar Saldo UQTCard
-                    db.collection('usuarios_banco').doc(user.uid).onSnapshot(doc => {
+                    // SINCRO: Escuchar Saldo en colección UQTCard
+                    db.collection('usuarios_uqtcard').doc(user.uid).onSnapshot(doc => {
                         if(doc.exists) {
                             document.getElementById('display-uqt-saldo').innerText = (doc.data().saldo || 0).toLocaleString();
+                        } else {
+                            // Crear documento inicial si no existe
+                            db.collection('usuarios_uqtcard').doc(user.uid).set({ saldo: 0, email: user.email });
                         }
                     });
-
-                    db.collection('buzon').where("para", "==", user.email).orderBy("timestamp", "desc").onSnapshot(snap => {
-                        const lista = document.getElementById('lista-correos');
-                        lista.innerHTML = snap.docs.map(doc => {
-                            const c = doc.data();
-                            return `<div class="item-card" onclick="abrirCarta('${c.remitente}', '${c.asunto}', '${c.mensaje}')">
-                                <p style="color:var(--oro); margin:0; font-size:0.8rem;">De: ${c.remitente}</p>
-                                <h3 style="font-size:1rem;">${c.asunto}</h3>
-                                <button class="btn-uqt" style="padding:5px; font-size:0.7rem; margin-top:5px; width:100px;">ABRIR</button>
-                            </div>`;
-                        }).join('');
-                    });
-                    cargarUsuariosAdmin();
-                    escucharCodigos();
                 }
             });
         }
 
-        // --- SISTEMA DE CODES (CANJEO) ---
         async function canjearCodigo() {
             const codeInput = document.getElementById('redeem-code').value.trim();
             if(!codeInput) return alert("Ingresa un código.");
             
             const snap = await db.collection('canjes').where("codigo", "==", codeInput).get();
-            if(snap.empty) return alert("Código inválido o ya usado.");
+            if(snap.empty) return alert("Código Nexus inválido.");
             
             const codeDoc = snap.docs[0];
             const valor = codeDoc.data().valor;
             
-            // Inyectar saldo al usuario (vinculado a su cuenta de BancoGato)
-            await db.collection('usuarios_banco').doc(auth.currentUser.uid).update({
+            // La carga se realiza a la UQTCard (Nueva Colección)
+            await db.collection('usuarios_uqtcard').doc(auth.currentUser.uid).update({
                 saldo: firebase.firestore.FieldValue.increment(valor)
             });
             
-            // Borrar código (un solo uso)
             await codeDoc.ref.delete();
-            
-            alert(`¡Código canjeado con éxito! Se acreditaron R$ ${valor}`);
+            alert(`¡Éxito! Nexus ha acreditado R$ ${valor} a tu UQTCard.`);
             document.getElementById('redeem-code').value = "";
-        }
-
-        // --- ADMIN CODES ---
-        async function crearCodigo() {
-            const code = document.getElementById('adm-code-str').value.trim();
-            const val = parseFloat(document.getElementById('adm-code-val').value);
-            if(!code || isNaN(val)) return alert("Datos incompletos.");
-            
-            await db.collection('canjes').add({ codigo: code, valor: val });
-            alert("Código creado.");
-            document.getElementById('adm-code-str').value = "";
-            document.getElementById('adm-code-val').value = "";
-        }
-
-        function escucharCodigos() {
-            db.collection('canjes').onSnapshot(snap => {
-                const lista = document.getElementById('adm-lista-codigos');
-                lista.innerHTML = "";
-                snap.forEach(doc => {
-                    const c = doc.data();
-                    lista.innerHTML += `
-                        <div class="receptor-card" style="display:flex; justify-content:space-between;">
-                            <span>${c.codigo} - <b>R$ ${c.valor}</b></span>
-                            <button onclick="borrarCodigo('${doc.id}')" style="background:red; color:white; border:none; cursor:pointer; border-radius:3px;">X</button>
-                        </div>`;
-                });
-            });
-        }
-
-        async function borrarCodigo(id) { await db.collection('canjes').doc(id).delete(); }
-
-        // --- SISTEMA DE HORARIOS ---
-        function renderizarServicios(servicios) {
-            const t = document.getElementById('lista-trenes'); const b = document.getElementById('lista-buses');
-            t.innerHTML = ""; b.innerHTML = "";
-            servicios.forEach(s => {
-                s.paradas.forEach(p => {
-                    const html = `<div class="item-card" onclick="iniciarCompra('${s.ramal}', '${p.nombre}')">
-                        <p style="color:var(--oro); font-weight:bold; margin:0;">${s.ramal}</p>
-                        <h3>${p.nombre}</h3><p>Hora: ${p.hora}</p></div>`;
-                    if(s.medio === "Tren") t.innerHTML += html; else b.innerHTML += html;
-                });
-            });
-        }
-
-        function iniciarCompra(sId, pNombre) {
-            const s = globalServicios.find(x => x.ramal === sId);
-            if(!s) return;
-            servicioSeleccionado = s;
-            document.getElementById('compra-interactiva').style.display = 'block';
-            document.getElementById('compra-info').innerText = `${s.ramal} destino ${pNombre}`;
-            document.getElementById('compra-hasta').value = pNombre;
-            document.getElementById('compra-precio').innerText = `R$ ${s.precioTramo || 0}`;
-            const idx = s.paradas.findIndex(p => p.nombre === pNombre);
-            const anteriores = s.paradas.slice(0, idx);
-            document.getElementById('compra-desde').innerHTML = anteriores.map(p => `<option>${p.nombre}</option>`).join('');
-            if(anteriores.length === 0) alert("Cabecera de ramal.");
-        }
-
-        async function confirmarCompra() {
-            const ticket = "UQT-" + Math.random().toString(36).substr(2,6).toUpperCase();
-            await db.collection('boletos_emitidos').add({
-                boletoID: ticket,
-                usuarioEmail: auth.currentUser.email,
-                desde: document.getElementById('compra-desde').value,
-                hasta: document.getElementById('compra-hasta').value,
-                servicio: servicioSeleccionado.ramal,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Boleto emitido: " + ticket);
-            document.getElementById('compra-interactiva').style.display = 'none';
-        }
-
-        function addIntermedia() {
-            const div = document.createElement('div'); div.className = "parada-edit";
-            div.innerHTML = `<input type="text" class="p-nombre" placeholder="Intermedia"> <input type="time" class="p-hora">`;
-            document.getElementById('adm-h-intermedia').appendChild(div);
-        }
-
-        async function subirHorario() {
-            const paradas = [];
-            document.querySelectorAll('.p-nombre').forEach((el, i) => {
-                const hora = document.querySelectorAll('.p-hora')[i].value;
-                if(el.value) paradas.push({ nombre: el.value, hora });
-            });
-            paradas.push({ nombre: document.getElementById('adm-h-fin-nombre').value, hora: document.getElementById('adm-h-fin-hora').value });
-
-            const nuevo = {
-                ramal: document.getElementById('adm-h-ramal').value,
-                medio: document.getElementById('adm-h-tipo').value,
-                precioTramo: parseFloat(document.getElementById('adm-h-precio').value),
-                paradas
-            };
-            let lista = globalServicios.filter(x => x.ramal !== nuevo.ramal);
-            lista.push(nuevo);
-            await db.collection('itinerarios').doc('servicios').set({ servicios: lista });
-            alert("Itinerario Publicado.");
-        }
-
-        function renderizarListaBorrar(servicios) {
-            document.getElementById('adm-lista-borrar').innerHTML = servicios.map(s => `
-                <div class="receptor-card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>${s.ramal} (${s.medio})</span>
-                    <button onclick="borrarServicio('${s.ramal}')" style="background:red; border:none; color:white; padding:5px; border-radius:4px;">BORRAR</button>
-                </div>
-            `).join('');
-        }
-
-        async function borrarServicio(id) {
-            const lista = globalServicios.filter(x => x.ramal !== id);
-            await db.collection('itinerarios').doc('servicios').set({ servicios: lista });
-        }
-
-        function prepararCompra(nombre, id) {
-            planSeleccionado = nombre;
-            precioSeleccionado = document.getElementById('pr-' + id).innerText;
-            document.getElementById('pay-total').innerText = "R$ " + precioSeleccionado;
-            document.getElementById('checkout-modal').style.display = 'flex';
-        }
-
-        function cerrarCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
-
-        async function finalizarCompra() {
-            const nombre = document.getElementById('pay-nombre').value;
-            if(!nombre) return alert("Completa tu nombre.");
-            try {
-                await db.collection('usuarios').doc(auth.currentUser.email).update({ plan: planSeleccionado, nombreCompleto: nombre });
-                alert(`¡Éxito! Ahora tienes el plan [${planSeleccionado}].`);
-                cerrarCheckout();
-            } catch(e) { alert("Error en el pago."); }
-        }
-
-        async function actualizarPlanes() {
-            await db.collection('config').doc('planes').set({
-                miga: { ben: document.getElementById('adm-miga-ben').value, pr: document.getElementById('adm-miga-pr').value },
-                pan: { ben: document.getElementById('adm-pan-ben').value, pr: document.getElementById('adm-pan-pr').value },
-                premium: { ben: document.getElementById('adm-premium-ben').value, pr: document.getElementById('adm-premium-pr').value }
-            });
-            alert("Planes actualizados.");
-        }
-
-        function cargarUsuariosAdmin() {
-            db.collection('usuarios').onSnapshot(snap => {
-                const select = document.getElementById('adm-c-usuario-select');
-                select.innerHTML = '<option value="">-- Seleccionar --</option>';
-                snap.forEach(doc => { select.innerHTML += `<option value="${doc.id}">${doc.id}</option>`; });
-            });
-        }
-
-        async function enviarCorreoInterno() {
-            const para = document.getElementById('adm-c-usuario-select').value;
-            const asunto = document.getElementById('adm-c-asunto').value;
-            const mensaje = document.getElementById('adm-c-texto').value;
-            if(!para || !asunto || !mensaje) return alert("Faltan datos");
-            await db.collection('buzon').add({ para, asunto, mensaje, remitente: "Admin@UQT.com", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Correo enviado.");
-        }
-
-        function abrirCarta(de, asunto, msg) {
-            document.getElementById('carta-modal').style.display = 'flex';
-            document.getElementById('carta-contenido').innerHTML = `<b>DE:</b> ${de}<br><b>ASUNTO:</b> ${asunto}<hr>${msg.replace(/\n/g, '<br>')}`;
         }
 
         function ingresar() {
             const email = document.getElementById('log-email').value;
             const pass = document.getElementById('log-pass').value;
             auth.signInWithEmailAndPassword(email, pass).then(async (cred) => {
-                // Sincronizar usuario banco
-                await db.collection('usuarios_banco').doc(cred.user.uid).set({ email }, { merge: true });
-                await db.collection('usuarios').doc(email).set({ email, lastLogin: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                // Sincronizar datos de sesión en Nexus Cloud
+                await db.collection('nexus_accounts').doc(cred.user.uid).set({ 
+                    email: email, 
+                    lastNexusLogin: firebase.firestore.FieldValue.serverTimestamp() 
+                }, { merge: true });
+                
                 document.getElementById('auth-screen').style.display='none'; 
                 document.getElementById('app-6').style.display='block'; 
-            }).catch(() => alert("Acceso denegado"));
+            }).catch(() => alert("Error de Cuenta Nexus: Verifique sus credenciales."));
         }
 
         function cerrarSesion() { auth.signOut().then(() => location.reload()); }
-        function accesoAdmin() { if(prompt("Acceso:") === "UnionQuintanaTuri2012@_") document.getElementById('admin-overlay').style.display = 'block'; }
-        async function actualizarConfig() {
-            await db.collection('config').doc('visuales').set({ marquee: document.getElementById('adm-marquee').value, loginTxt: document.getElementById('adm-login-txt').value, imgAnuncio: document.getElementById('adm-img-url').value }, { merge: true });
-            alert("Config guardada");
-        }
-        async function enviarSoporte() {
-            await db.collection('soporte').add({ usuario: auth.currentUser.email, mensaje: document.getElementById('soporte-msg').value, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Enviado");
-        }
-        setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
+        function accesoAdmin() { if(prompt("Nexus Override Code:") === "Nexus2026") alert("Acceso concedido al terminal."); }
+        
+        setInterval(() => { 
+            const now = new Date();
+            document.getElementById('reloj').innerText = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0'); 
+        }, 1000);
     </script>
-    <div id="adro-corp-footer" style="background: #050505; color: #555; padding: 40px 20px; text-align: center; border-top: 1px solid #111; font-family: 'Segoe UI', sans-serif; margin-top: 50px;">
-        <div style="max-width: 400px; margin: 0 auto;">
-            <p style="color: #888; font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; font-size: 0.8rem;">WEB DE ADRO CORPORATION</p>
-            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
-                <a href="https://bit.ly/BancoGato" target="_blank" style="color: #98ff98; text-decoration: none; font-size: 1rem; border: 1px solid #1a1a1a; padding: 10px; border-radius: 8px;">🐾 BancoGato</a>
-                <a href="https://bit.ly/uqtweb" target="_blank" style="color: #32CD32; text-decoration: none; font-size: 1rem; border: 1px solid #1a1a1a; padding: 10px; border-radius: 8px;">🚉 UQT S.A.</a>
-            </div>
-            <p style="font-size: 0.65rem;">&copy; 2026 Adro Corp. v6.8.7 Deployment</p>
-        </div>
-    </div>
 </body>
 </html>
