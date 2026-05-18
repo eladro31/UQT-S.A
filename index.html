@@ -12,7 +12,7 @@
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--fondo); color: var(--texto); overflow-x: hidden; }
         
         input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; background: #111; color: var(--verde); border: 1px solid #333; box-sizing: border-box; outline: none; }
-        .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
+        .btn-uqt { background: var(--verde); color: #000; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; text-align: center; text-decoration: none; display: block; box-sizing: border-box; }
         .btn-uqt:active { transform: scale(0.98); }
 
         .uqt-card-container { background: var(--verde); border-radius: 15px; padding: 20px; margin: 20px; color: #000; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
@@ -39,6 +39,13 @@
 
         #carta-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:70000; padding:20px; overflow-y:auto; flex-direction:column; align-items:center; }
         .hoja-uqt { background-image: url('https://i.postimg.cc/DfSB1gr8/1778130391359-(1).jpg'); background-size: 100% 100%; width: 100%; max-width: 450px; min-height: 600px; padding: 100px 40px 60px 40px; color: #000; box-sizing: border-box; font-family: serif; position: relative; }
+        
+        /* Contenedores del Validador de Boletos */
+        .resultado-boleto { padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; font-size: 0.95rem; line-height: 1.5; }
+        .boleto-valido { background: rgba(50, 205, 50, 0.15); border: 2px solid var(--verde); color: #fff; }
+        .boleto-valido h3 { color: var(--verde); margin-top: 0; letter-spacing: 2px; }
+        .boleto-falso { background: rgba(255, 68, 68, 0.15); border: 2px solid var(--rojo); color: #fff; }
+        .boleto-falso h3 { color: var(--rojo); margin-top: 0; letter-spacing: 1px; }
     </style>
 </head>
 <body onload="inicializarApp()">
@@ -76,6 +83,12 @@
             <button onclick="cerrarSesion()" style="background:var(--rojo); color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.7rem; font-weight:bold;">SALIR</button>
         </div>
 
+        <div style="padding: 20px 20px 0 20px;">
+            <a href="https://eladro31.github.io/UQTBoletos" target="_blank" class="btn-uqt" style="background: var(--azul); color: #fff;">
+                🎫 ¿Necesitas sacar boletos? Ve a la boletería digital aquí
+            </a>
+        </div>
+
         <div class="uqt-card-container">
             <div class="uqt-card-logo"><span class="u">UQT</span><span class="c">Card</span></div>
             <p>ID: <span id="display-uqt-id" class="uqt-card-id">---</span></p>
@@ -107,6 +120,15 @@
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2 style="color:var(--verde)">⚙️ RECEPTOR UNIVERSAL (ADMIN)</h2>
             <button onclick="location.reload()" style="background:var(--rojo); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">SALIR</button>
+        </div>
+
+        <div class="sec-divider">🔍 Buscador de boletos</div>
+        <div style="background:var(--panel); padding:15px; border-radius:10px; margin-bottom:20px; border: 1px solid #333;">
+            <label style="font-size: 0.85rem; color:#ccc;">ID del Boleto (Ej: UQT-XXXXXX):</label>
+            <input type="text" id="adm-search-ticket-id" placeholder="Ingresa el ID del boleto">
+            <button class="btn-uqt" style="background: var(--azul); color: #fff;" onclick="buscarBoletoAdmin()">Buscar Pasaje</button>
+            
+            <div id="adm-ticket-result-container"></div>
         </div>
 
         <div class="sec-divider">🎟️ CREAR CÓDIGO DE CANJEO</div>
@@ -239,6 +261,71 @@
                     if(s.medio === "Tren") t.innerHTML += html; else b.innerHTML += html;
                 });
             });
+        }
+
+        // IMPLEMENTACIÓN REQUERIMIENTO 3: LÓGICA DE VERIFICACIÓN CRUZADA DE PASAJES
+        async function buscarBoletoAdmin() {
+            const targetID = document.getElementById('adm-search-ticket-id').value.trim().toUpperCase();
+            const container = document.getElementById('adm-ticket-result-container');
+            if(!targetID) return alert("Digita un ID de pasaje antes de buscar.");
+
+            container.innerHTML = "<p style='color:var(--oro)'>Buscando en la red de Firebase...</p>";
+
+            try {
+                const snap = await db.collection('boletos_emitidos').where("boletoID", "==", targetID).get();
+                
+                if(snap.empty) {
+                    // Plantilla Boleto Inexistente / Falso
+                    container.innerHTML = `
+                        <div class="resultado-boleto boleto-falso">
+                            <h3>🚨 BOLETO NO VALIDO O FALSO</h3>
+                            <p>Si es falso por favor repórtalo. Puede que no exista el boleto o que ya haya vencido.</p>
+                        </div>`;
+                    return;
+                }
+
+                const bData = snap.docs[0].data();
+                const userEmail = bData.usuarioEmail;
+                
+                // Buscar perfil de pasajero para chequear Plan de Abono Activo
+                const uDoc = await db.collection('usuarios').doc(userEmail).get();
+                let planAbonado = "Ninguno (Boleto Común)";
+                if(uDoc.exists && uDoc.data().plan) {
+                    planAbonado = uDoc.data().plan;
+                }
+
+                // Cruzar precio actual del tramo desde la configuración del servicio
+                const servicioInfo = globalServicios.find(x => x.ramal === bData.servicio);
+                const precioActual = servicioInfo ? `R$ ${servicioInfo.precioTramo || 0}` : "No especificado";
+
+                // Validación de caducidad (Vence pasadas las 24 horas del timestamp de emisión)
+                let vencio = "No";
+                if(bData.timestamp) {
+                    const emisionMs = bData.timestamp.toMillis();
+                    const ahoraMs = Date.now();
+                    if(ahoraMs - emisionMs > 24 * 60 * 60 * 1000) {
+                        vencio = "Sí (Excedió las 24 horas)";
+                    }
+                }
+
+                // Plantilla Boleto Real Encontrado
+                container.innerHTML = `
+                    <div class="resultado-boleto boleto-valido">
+                        <h3>✅ BOLETO REAL</h3>
+                        <b>ID:</b> ${bData.boletoID}<br>
+                        <b>Persona:</b> ${userEmail}<br>
+                        <b>Servicio:</b> ${bData.servicio}<br>
+                        <b>Desde:</b> ${bData.desde}<br>
+                        <b>Hasta:</b> ${bData.hasta}<br>
+                        <b>Abonado:</b> ${planAbonado}<br>
+                        <b>Precio actual (del boleto):</b> ${precioActual}<br>
+                        <b>Venció?:</b> ${vencio}
+                    </div>`;
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = "<p style='color:var(--rojo)'>Error de conexión al servidor.</p>";
+            }
         }
 
         function addIntermedia() {
